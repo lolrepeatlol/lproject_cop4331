@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
+import { buildPath } from './Path';
+import { storeToken } from '../tokenStorage';
+import { jwtDecode } from 'jwt-decode';
+import type { JwtPayload } from 'jwt-decode';
 
-const app_name = 'ucfgroup4.xyz'; 
-
-function buildPath(route:string) : string
-{
-    if (process.env.NODE_ENV != 'development')
-    {
-        return 'http://' + app_name + ':5000/' + route;
-    }
-    else
-    {
-        return 'http://localhost:5000/' + route;
-    }
+interface MyJwtPayload extends JwtPayload {
+  firstName: string;
+  lastName: string;
+  id: number;
 }
 
 function Login()
@@ -34,24 +30,42 @@ function Login()
 
       var res = JSON.parse(await response.text());
 
-      if( res.id <= 0 )
-      {
-        setMessage('User/Password combination incorrect');
-      }
-      else
-      {
-        var user = {firstName:res.firstName,lastName:res.lastName,id:res.id}
+      const { accessToken } = res;
+      storeToken( res ); 
 
-        localStorage.setItem('user_data', JSON.stringify(user));
+      const decoded = jwtDecode<MyJwtPayload>(accessToken);
 
-        setMessage('');
-        window.location.href = '/cards';
-      }
-    }
-    catch(error:any)
-    {
-      alert(error.toString());
-      return;
+      try 
+      { 
+        var ud = decoded;
+        var userId = ud.iat;
+        var firstName = ud.firstName;
+        var lastName = ud.lastName;
+
+        if( userId == undefined || userId <= 0 ) 
+        { 
+          setMessage('User/Password combination incorrect');
+        }
+        else 
+        { 
+          var user = {firstName:firstName,lastName:lastName,id:userId} 
+
+          localStorage.setItem('user_data', JSON.stringify(user)); 
+          
+          setMessage(''); 
+          window.location.href = '/cards';
+        }
+      } 
+      catch(e) 
+      { 
+        console.log( e );
+        return;
+      } 
+    } 
+    catch(error:any) 
+    { 
+      alert(error.toString()); 
+      return; 
     }
   };
 

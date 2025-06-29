@@ -1,39 +1,27 @@
 import React, { useState } from 'react';
-
-const app_name = 'ucfgroup4.xyz'; 
-
-function buildPath(route:string) : string
-{
-    if (process.env.NODE_ENV != 'development')
-    {
-        return 'http://' + app_name + ':5000/' + route;
-    }
-    else
-    {
-        return 'http://localhost:5000/' + route;
-    }
-}
+import { buildPath } from './Path';
+import { retrieveToken, storeToken } from '../tokenStorage';
 
 function CardUI()
 {
-    let _ud : any = localStorage.getItem('user_data');
-    let ud = JSON.parse( _ud );
-    let userId : string = ud.id;
-    //let firstName : string = ud.firstName; 
-    //let lastName : string = ud.lastName;
-
     const [message,setMessage] = useState(''); 
     const [searchResults,setResults] = useState(''); 
     const [cardList,setCardList] = useState(''); 
     const [search,setSearchValue] = React.useState(''); 
     const [card,setCardNameValue] = React.useState('');
 
+    var _ud = localStorage.getItem('user_data');
+    var ud = JSON.parse(String(_ud));
+    var userId = ud.id; 
+    //let firstName : string = ud.firstName; 
+    //let lastName : string = ud.lastName;
+
     async function addCard(event:any) : Promise<void>
     {
         event.preventDefault(); 
 
-        let obj = {userId:userId,card:card};
-        let js = JSON.stringify(obj);
+        var obj = {userId:userId,card:card,jwtToken:retrieveToken()};
+        var js = JSON.stringify(obj); 
 
         try
         {
@@ -50,6 +38,7 @@ function CardUI()
             else
             {
                 setMessage('Card has been added');
+                storeToken( res.jwtToken );
             }
         }
         catch(error:any)
@@ -62,8 +51,8 @@ function CardUI()
     {
         event.preventDefault(); 
 
-        let obj = {userId:userId,search:search};
-        let js = JSON.stringify(obj);
+        var obj = {userId:userId,search:search,jwtToken:retrieveToken()};
+        var js = JSON.stringify(obj); 
 
         try
         {
@@ -86,6 +75,7 @@ function CardUI()
             }
 
             setResults('Card(s) have been retrieved');
+            storeToken( res.jwtToken );
             setCardList(resultText);
         }
         catch(error:any)
