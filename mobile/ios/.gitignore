@@ -1,0 +1,54 @@
+# Xcode user settings & metadata
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
+profile
+
+# Build artifacts & cache
+build/
+DerivedData/
+Flutter/App.framework
+Flutter/Flutter.framework
+Flutter/Flutter.podspec
+Flutter/Generated.xcconfig
+Flutter/app.flx
+Flutter/app.zip
+Flutter/flutter_assets/
+Flutter/flutter_export_environment.sh
+Flutter/ephemeral/
+
+# CocoaPods
+Pods/
+.symlinks/
+.generated/
+ServiceDefinitions.json
+
+# System or editor artifacts
+*.moved-aside
+Icon?
+.tags*
+.sconsign.dblite
+.DS_Store
+
+# Deep globs (safety if folders are nested weirdly)
+**/Pods/
+**/.symlinks/
+**/DerivedData/
+**/.generated/
+**/*sync/
+**/.vagrant/
+
+# Flutter plugin registrant (auto-generated)
+Runner/GeneratedPluginRegistrant.*
+
+# Xcode project files
+Runner.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+**/WorkspaceSettings.xcsettings
+
+# Don't override ignores (remove previous exceptions)
+# !default.mode1v3
+# !default.mode2v3
+# !default.pbxuser
+# !default.perspectivev3
