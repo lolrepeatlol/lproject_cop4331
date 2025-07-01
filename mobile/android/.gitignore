@@ -1,0 +1,26 @@
+# Gradle & build cache
+.gradle/
+build/
+.cxx/
+captures/
+
+# Local environment config
+local.properties
+key.properties
+
+# Gradle wrapper (SHOULD commit these, so these lines are removed)
+# gradlew
+# gradlew.bat
+
+# Flutter-generated plugin registrant (now handled internally, no need to ignore)
+# GeneratedPluginRegistrant.java
+
+# Signing keys — DO NOT COMMIT
+**/*.keystore
+**/*.jks
+
+# IDE configs
+.idea/
+*.iml
+
+app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
