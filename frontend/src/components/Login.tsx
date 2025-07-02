@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { buildPath } from '../Path';
 import { storeToken } from '../tokenStorage';
 import { jwtDecode } from 'jwt-decode';
 
 interface DecodedToken {
-  UserID: number; 
+  UserID: number;
   firstName: string;
   lastName: string;
 }
@@ -13,6 +14,10 @@ function Login() {
   const [message, setMessage] = useState('');
   const [loginName, setLoginName] = useState('');
   const [loginPassword, setPassword] = useState('');
+  const navigate = useNavigate();
+  const handleRegister = () => {
+    navigate('/Register');
+  };
 
   async function doLogin(event: React.FormEvent): Promise<void> {
     event.preventDefault();
@@ -28,7 +33,7 @@ function Login() {
       });
 
       const res = await response.json();
-      
+
 
       if (!response.ok || !res.accessToken) {
         // Handle cases where login fails on the server (e.g., wrong password)
@@ -86,14 +91,23 @@ function Login() {
           value={loginPassword}
           onChange={handleSetPassword}
         />
+        <br />
         <input
           type="submit"
           id="loginButton"
           className="buttons"
-          value="Do It"
+          value="Log in"
         />
+
       </form>
       <span id="loginResult">{message}</span>
+      <input
+        type="button"
+        id="registerButton"
+        className="buttons"
+        value = "Register"
+        onClick={handleRegister}
+      />
     </div>
   );
 }
