@@ -1,4 +1,4 @@
-const app_name = 'ucfgroup9.xyz'
+const app_name = 'ucfgroup4.xyz'
 
 export function buildPath(route)
 {
