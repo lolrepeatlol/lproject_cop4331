@@ -1,7 +1,11 @@
 require('express');
 require('mongodb');
-// Move this require to the top for better code structure.
 const token = require("./createJWT.js");
+const sgMail = require('@sendgrid/mail');
+
+// It's crucial to set your SendGrid API key. 
+// For security, use an environment variable instead of hardcoding it.
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 exports.setApp = function (app, client) {
 
@@ -15,23 +19,30 @@ exports.setApp = function (app, client) {
         try {
             const db = client.db('COP4331');
             const results = await db.collection('Users').find({ Login: login, Password: password }).toArray();
-
             if (results.length > 0) {
                 const user = results[0];
 
-                // Check if the UserID field actually exists before trying to use it.
+                // Check if the UserID field actually exists and user has verified their email  
                 if (user.UserID !== undefined && user.UserID !== null) {
-                    const id = user.UserID;
-                    const fn = user.FirstName;
-                    const ln = user.LastName;
-                    
-                    ret = token.createToken(fn, ln, id);
+
+                    if (user.isVerified === true) {
+                        const id = user.UserID;
+                        const fn = user.FirstName;
+                        const ln = user.LastName;
+                        ret = token.createToken(fn, ln, id);
+                    }
+                    else {
+                        console.error("Email not verified!");
+                        ret = { error: "Account not verified. Please check your email." };
+                        return res.status(403).json(ret);
+                    }
+
                 } else {
                     // This will be triggered if the UserID field is missing or has the wrong case.
                     console.error("Error: User found but UserID field is missing or null.", user);
                     ret = { error: "Login failed: User data is corrupted or malformed." };
-                    // It's better to send a 400 or 500 status for actual errors.
-                    return res.status(500).json(ret); 
+                    // It's better to send a 500 status for actual server-side errors.
+                    return res.status(500).json(ret);
                 }
             } else {
                 // Send a more appropriate 401 Unauthorized status for incorrect credentials.
@@ -129,47 +140,118 @@ exports.setApp = function (app, client) {
     });
 
     app.post('/api/register', async (req, res, next) => {
-        // incoming: firstName, lastName, login, password
-        // outgoing: error, token
+        // incoming: firstName, lastName, login, password, email
+        // outgoing: error
 
-        const { firstName, lastName, login, password } = req.body;
+        // Note: isVerified is set internally, not by the user.
+        const { firstName, lastName, login, password, email } = req.body;
         const db = client.db('COP4331');
         const users = db.collection('Users');
         let error = '';
-        var ret;
 
         try {
             const existingUser = await users.findOne({ Login: login });
             if (existingUser) {
-                error = 'User already exists';
-                return res.status(400).json({ error: error });
+                error = 'User with this login already exists.';
+                return res.status(409).json({ error: error });
             }
+
+            const existingEmail = await users.findOne({ email: email });
+            if (existingEmail) {
+                error = 'An account with this email already exists.';
+                return res.status(409).json({ error: error });
+            }
+
 
             const lastUser = await users.find().sort({ UserID: -1 }).limit(1).toArray();
             const newUserID = lastUser.length > 0 ? lastUser[0].UserID + 1 : 1;
+
+            // Create a unique token for email verification
+            const verificationToken = require('crypto').randomBytes(32).toString('hex');
 
             const newUser = {
                 UserID: newUserID,
                 FirstName: firstName,
                 LastName: lastName,
                 Login: login,
-                Password: password 
+                Password: password,
+                email: email,
+                isVerified: false,
+                verificationToken: verificationToken
             };
             await users.insertOne(newUser);
 
-            // Create a JWT for the new user
-            try {
-                ret = token.createToken(firstName, lastName, newUserID);
-            } catch (e) {
-                ret = { error: e.message };
-            }
+            // --- Send Verification Email ---
+            const fromEmail = 'noreply@em1166.ucfgroup4.xyz';
+            const protocol = req.protocol;
+            const host = req.get('host');
+            const verificationLink = `${protocol}://${host}/api/verify-email?token=${verificationToken}&email=${email}`;
 
-            res.status(200).json(ret);
+            const msg = {
+                to: email,
+                from: fromEmail,
+                subject: 'Welcome! Please Verify Your Email',
+                text: `Thank you for registering. Please click this link to verify your email: ${verificationLink}`,
+                html: `<strong>Thank you for registering!</strong><p>Please click the link below to verify your email address:</p><a href="${verificationLink}">Verify Email</a>`,
+            };
+
+            await sgMail.send(msg);
+            console.log(`Verification email sent to ${email}`);
+            // --- End of Email Sending ---
+
+            // Do not send a JWT token on register. The user must log in after verifying.
+            res.status(201).json({ message: "Registration successful. Please check your email to verify your account." });
+
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'Server error' });
+            // Check if it's a SendGrid error
+            if (err.response) {
+                console.error(err.response.body)
+            }
+            res.status(500).json({ error: 'Server error during registration.' });
         }
     });
+
+    /**
+     * API Endpoint to verify a user's email address.
+     */
+    app.get('/api/verify-email', async (req, res) => {
+        const { token, email } = req.query;
+
+        if (!token || !email) {
+            return res.status(400).send('Verification failed. Token or email not provided.');
+        }
+
+        try {
+            const db = client.db('COP4331');
+            const users = db.collection('Users');
+
+            const user = await users.findOne({ email: email, verificationToken: token });
+
+            if (!user) {
+                return res.status(400).send('Invalid verification link. Please try registering again.');
+            }
+
+            if (user.isVerified) {
+                return res.status(200).send('This account has already been verified. You can now log in.');
+            }
+
+            // Update the user to set isVerified to true and remove the token
+            await users.updateOne(
+                { _id: user._id },
+                {
+                    $set: { isVerified: true },
+                    $unset: { verificationToken: "" } // Remove the token after successful verification
+                }
+            );
+            res.status(200).send('Email successfully verified! You can now close this tab and log in.');
+
+        } catch (e) {
+            console.error(e);
+            res.status(500).send('An error occurred during email verification.');
+        }
+    });
+
 
     app.get('/', (req, res) => {
         res.send('Server is running. Try POSTing to /api/login or /api/register');
