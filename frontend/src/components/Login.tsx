@@ -73,6 +73,10 @@ function Login() {
     setPassword(e.target.value);
   }
 
+  const handleForgotPassword = () => {
+    navigate('/forgot-password');
+  };
+
   return (
     <div id="loginDiv">
       <span id="inner-title">PLEASE LOG IN</span><br />
@@ -105,9 +109,18 @@ function Login() {
         type="button"
         id="registerButton"
         className="buttons"
-        value = "Register"
+        value="Register"
         onClick={handleRegister}
       />
+      <br />
+      <input
+        type="button"
+        id="forgotButton"
+        className="buttons"
+        value="Forgot Password?"
+        onClick={handleForgotPassword}
+      />
+
     </div>
   );
 }
