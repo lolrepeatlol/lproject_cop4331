@@ -9,6 +9,8 @@ interface DecodedToken {
   UserID: number;
   firstName: string;
   lastName: string;
+  email: string;
+  isVerified: boolean;
 }
 
 function Register() {
@@ -28,13 +30,12 @@ function Register() {
   async function doRegister(event: React.FormEvent): Promise<void> {
     event.preventDefault();
     // Check all feilds are entered
-    if (!firstName || !lastName || !email || !loginName || !loginPassword) {
-      setMessage('All fields are required!');
-      return; 
+    let res: boolean = checkFields();
+    if (res == false) {
+      return;
     }
-
     // Consolidate user data for the request
-    const obj = { firstName, lastName, login: loginName, password: loginPassword };
+    const obj = { firstName, lastName, login: loginName, password: loginPassword, email: email };
     const js = JSON.stringify(obj);
 
     try {
@@ -55,17 +56,19 @@ function Register() {
       // Assuming the register endpoint returns a token upon success
       if (res.accessToken) {
         const { accessToken } = res;
-        storeToken(res); // Store the token
+        storeToken(res); 
         const decoded = jwtDecode<DecodedToken>(accessToken);
 
-        const user = { firstName: decoded.firstName, lastName: decoded.lastName, id: decoded.UserID };
+        const user = { firstName: decoded.firstName, lastName: decoded.lastName, email: decoded.email, isVerified: decoded.isVerified, id: decoded.UserID };
         localStorage.setItem('user_data', JSON.stringify(user));
 
         setMessage('Registration successful!');
-        window.location.href = '/cards'; // Redirect to the main app page
+        window.location.href = '/login'; // Redirect to the login app page
       } else {
         // Fallback if the server response is unexpected
-        setMessage('Registration successful, please log in.');
+        setMessage('Registration successful, please check your email for verification link.');
+        await sleep(1500); // Wait 1.5 sec
+        window.location.href = '/login'
       }
 
     } catch (error: any) {
@@ -94,8 +97,35 @@ function Register() {
   function handleSetPassword(e: React.ChangeEvent<HTMLInputElement>): void {
     setPassword(e.target.value);
   }
-
-
+  async function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+  function checkFields(): boolean {
+    if (!firstName || !lastName || !email || !loginName || !loginPassword) {
+      setMessage('All fields are required!');
+      return false;
+    }
+    if (!(email.includes('@') && email.includes('.com'))) {
+      setMessage('Please make sure you are using a valid email IE: example@domain.com');
+      return false;
+    }
+    if (loginPassword.length < 8) {
+      setMessage('Password must be at least 8 characters!');
+      return false;
+    }
+    let validKey = /[!@#$%^&*()?]/;
+    if (!(validKey.test(loginPassword))) {
+      console.log(validKey.test(loginPassword))
+      setMessage('Password must contain a special character Ex.(!@$)')
+      return false;
+    }
+    let upperCase = /[A-Z]/;
+    if (!(upperCase.test(loginPassword))) {
+      setMessage('Password must contain a captial letter');
+      return false;
+    }
+    return true;
+  }
   return (
     <div id="registerDiv">
       <span id="inner-title">PLEASE REGISTER</span><br />
