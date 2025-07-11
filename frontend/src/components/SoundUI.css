@@ -1,0 +1,161 @@
+#soundUIDiv {
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+#soundUIDiv label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: bold;
+  font-size: 18px;
+
+}
+
+/* The main grid container */
+.grid-container {
+  display: grid;
+  /* This creates 4 columns of equal width */
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  /* This creates space between the boxes */
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+/* The individual boxes in the grid */
+.grid-item {
+  border: 1px solid #aaa;
+  background-color: #fff;
+  padding: 20px;
+  aspect-ratio: 1 / 1;
+  /* Makes the boxes square */
+  color: #000000;
+
+
+  /* The following lines center the number inside the box */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-family: sans-serif;
+}
+.modal-overlay {
+  /* Covers the entire screen */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+
+  /* Uses Flexbox to center the child */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  /* This is the modal itself */
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color:black;
+}
+.modal-header h2 {
+  color: black;
+}
+
+.sound-item-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.sound-name {
+  font-size: 16px;
+  font-weight: bold;
+  flex-grow: 1;
+  text-align: left;
+}
+
+.play-button {
+  background-color: #4CAF50; 
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.3s;
+}
+
+.play-button:hover {
+  background-color: #45a049;
+}
+
+.grid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.sound-item-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%; 
+  text-align: center;
+}
+
+.play-button {
+  margin-bottom: 5px;
+}
+
+.sound-name {
+  font-size: 14px;
+}
+label{
+  color:#000000;
+}
+/* Add this to your SoundUI.css file */
+
+.sound-item-content {
+  position: relative; /* Needed for positioning the clear button */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.clear-button {
+  position: absolute;
+  top: 0;
+  right: 5px;
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.clear-button:hover {
+  color: #ff0000; /* Red on hover */
+}

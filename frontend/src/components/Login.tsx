@@ -53,7 +53,7 @@ function Login() {
         localStorage.setItem('user_data', JSON.stringify(user));
 
         setMessage('');
-        window.location.href = '/cards'; // Redirect on success
+        window.location.href = '/sound'; // Redirect on success
       } else {
         // This case handles a malformed token that lacks a userId
         setMessage('An error occurred during login. Invalid token format.');
