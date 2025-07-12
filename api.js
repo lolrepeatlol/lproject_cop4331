@@ -1,5 +1,6 @@
 require('express');
 require('mongodb');
+const { ObjectId } = require('mongodb');
 const token = require("./createJWT.js");
 const sgMail = require('@sendgrid/mail');
 
@@ -99,46 +100,47 @@ exports.setApp = function (app, client) {
         res.status(200).json(ret);
     });
 
-    app.post('/api/searchcards', async (req, res, next) => {
+    app.post('/api/searchSounds', async (req, res) => {
         // incoming: userId, search, jwtToken
-        // outgoing: results[], error, jwtToken
+        // outgoing: results[{soundName, filePath, ...}], error, jwtToken
 
-        var error = '';
+        let error = '';
         const { UserID, search, jwtToken } = req.body;
 
         try {
             if (token.isExpired(jwtToken)) {
-                var r = { error: 'The JWT is no longer valid', jwtToken: '' };
+                let r = { error: 'The JWT is no longer valid', jwtToken: '' };
                 res.status(200).json(r);
                 return;
             }
         } catch (e) {
             console.log(e.message);
-            var r = { error: e.message, jwtToken: '' };
+            let r = { error: e.message, jwtToken: '' };
             res.status(200).json(r);
             return;
         }
 
-        var _search = search.trim();
         const db = client.db('COP4331');
-        const results = await db.collection('Cards').find({ "Card": { $regex: _search + '.*', $options: 'i' }, "UserID": UserID }).toArray();
+        const _search = search.trim();
 
-        var _ret = [];
-        for (var i = 0; i < results.length; i++) {
-            _ret.push(results[i].Card);
-        }
+        const results = await db.collection('Sounds').find({
+            "soundName": { $regex: _search + '.*', $options: 'i' },
+            $or: [
+                { "isDefault": "true" },
+                { "UserID": UserID }
+            ]
+        }).toArray();
 
-        var refreshedToken = null;
+        let refreshedToken = null;
         try {
             refreshedToken = token.refresh(jwtToken);
         } catch (e) {
             console.log(e.message);
         }
 
-        var ret = { results: _ret, error: error, jwtToken: refreshedToken };
+        const ret = { results: results, error: error, jwtToken: refreshedToken };
         res.status(200).json(ret);
     });
-
     app.post('/api/register', async (req, res, next) => {
         // incoming: firstName, lastName, login, password, email
         // outgoing: error
@@ -236,12 +238,11 @@ exports.setApp = function (app, client) {
                 return res.status(200).send('This account has already been verified. You can now log in.');
             }
 
-            // Update the user to set isVerified to true and remove the token
             await users.updateOne(
                 { _id: user._id },
                 {
                     $set: { isVerified: true },
-                    $unset: { verificationToken: "" } // Remove the token after successful verification
+                    $unset: { verificationToken: "" }
                 }
             );
             res.status(200).send('Email successfully verified! You can now close this tab and log in.');
@@ -256,4 +257,115 @@ exports.setApp = function (app, client) {
     app.get('/', (req, res) => {
         res.send('Server is running. Try POSTing to /api/login or /api/register');
     });
+    app.post('/api/saveGridLayout', async (req, res, next) => {
+        const { UserID, layout, jwtToken } = req.body;
+
+        try {
+            if (token.isExpired(jwtToken)) {
+                return res.status(401).json({ error: 'The JWT is no longer valid', jwtToken: '' });
+            }
+        } catch (e) {
+            return res.status(401).json({ error: 'Invalid JWT', jwtToken: '' });
+        }
+
+        if (!UserID || !Array.isArray(layout)) {
+            return res.status(400).json({ error: 'UserID and layout array are required.' });
+        }
+
+        const updateFields = {};
+        layout.forEach((sound, index) => {
+            const fieldKey = `${index + 1}`;
+            updateFields[fieldKey] = sound ? new ObjectId(sound._id) : null;
+        });
+
+        try {
+            const db = client.db('COP4331');
+            const numericUserId = parseInt(UserID, 10);
+
+            if (isNaN(numericUserId)) {
+                return res.status(400).json({ error: 'Invalid UserID format.' });
+            }
+
+            await db.collection('UserLayout').updateOne(
+                { UserID: numericUserId },
+                { $set: { ...updateFields, UserID: numericUserId } },
+                { upsert: true }
+            );
+
+            const refreshedToken = token.refresh(jwtToken);
+            res.status(200).json({ message: 'Layout saved successfully.', jwtToken: refreshedToken });
+
+        } catch (e) {
+            console.error('API Error:', e);
+            res.status(500).json({ error: 'Server error while saving layout.' });
+        }
+    });
+
+
+    app.post('/api/getGridLayout', async (req, res, next) => {
+        const { UserID, jwtToken } = req.body;
+
+
+        try {
+            if (token.isExpired(jwtToken)) {
+                return res.status(401).json({ error: 'The JWT is no longer valid', jwtToken: '' });
+            }
+        } catch (e) {
+            return res.status(401).json({ error: 'Invalid JWT', jwtToken: '' });
+        }
+
+
+        if (!UserID) {
+            return res.status(400).json({ error: 'UserID is required.' });
+        }
+
+
+        try {
+            const db = client.db('COP4331');
+            const refreshedToken = token.refresh(jwtToken);
+            const numericUserId = parseInt(UserID, 10);
+
+            if (isNaN(numericUserId)) {
+                return res.status(400).json({ error: 'Invalid UserID format.' });
+            }
+
+            const layoutDoc = await db.collection('UserLayout').findOne({ UserID: numericUserId });
+
+            if (!layoutDoc) {
+                return res.status(200).json({ layout: Array(8).fill(null), jwtToken: refreshedToken });
+            }
+
+
+            const soundIdsInLayout = [];
+            for (let i = 0; i < 8; i++) {
+                const fieldKey = `${i + 1}`;
+                const soundId = layoutDoc[fieldKey];
+                if (soundId && soundId instanceof ObjectId) {
+                    soundIdsInLayout.push(soundId);
+                }
+            }
+
+            const sounds = await db.collection('Sounds').find({ _id: { $in: soundIdsInLayout } }).toArray();
+            const soundMap = new Map(sounds.map(sound => [sound._id.toString(), sound]));
+
+            const finalLayout = [];
+            for (let i = 0; i < 8; i++) {
+                const fieldKey = `${i + 1}`;
+                const soundId = layoutDoc[fieldKey];
+                const soundDetails = soundId ? soundMap.get(soundId.toString()) : null;
+                finalLayout.push(soundDetails || null);
+            }
+
+            res.status(200).json({ layout: finalLayout, jwtToken: refreshedToken });
+
+        } catch (e) {
+            console.error('API Error:', e);
+            res.status(500).json({ error: 'Server error while retrieving layout.' });
+        }
+    });
+
+    app.get('/', (req, res) => {
+        res.send('Server is running. Try POSTing to /api/login or /api/register');
+    });
+
 }
