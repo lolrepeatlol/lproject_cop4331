@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect} from 'react';
 import './SoundUI.css';
 import { buildPath } from '../Path';
 import { retrieveToken, storeToken } from '../tokenStorage';
