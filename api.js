@@ -3,13 +3,10 @@ require('mongodb');
 const { ObjectId } = require('mongodb');
 const token = require("./createJWT.js");
 const sgMail = require('@sendgrid/mail');
-
-// It's crucial to set your SendGrid API key. 
-// For security, use an environment variable instead of hardcoding it.
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 exports.setApp = function (app, client) {
-
+    // Login
     app.post('/api/login', async (req, res, next) => {
         // incoming: login, password
         // outgoing: id, firstName, lastName, error
@@ -60,7 +57,7 @@ exports.setApp = function (app, client) {
         res.status(200).json(ret);
     });
 
-
+    // Add Card
     app.post('/api/addcard', async (req, res, next) => {
         // incoming: userId, card, jwtToken
         // outgoing: error, jwtToken
@@ -100,6 +97,7 @@ exports.setApp = function (app, client) {
         res.status(200).json(ret);
     });
 
+    // Search Sounds
     app.post('/api/searchSounds', async (req, res) => {
         // incoming: userId, search, jwtToken
         // outgoing: results[{soundName, filePath, ...}], error, jwtToken
@@ -141,6 +139,8 @@ exports.setApp = function (app, client) {
         const ret = { results: results, error: error, jwtToken: refreshedToken };
         res.status(200).json(ret);
     });
+
+    // Register API
     app.post('/api/register', async (req, res, next) => {
         // incoming: firstName, lastName, login, password, email
         // outgoing: error
@@ -214,9 +214,7 @@ exports.setApp = function (app, client) {
         }
     });
 
-    /**
-     * API Endpoint to verify a user's email address.
-     */
+    // Verify Email
     app.get('/api/verify-email', async (req, res) => {
         const { token, email } = req.query;
 
@@ -253,10 +251,116 @@ exports.setApp = function (app, client) {
         }
     });
 
+    // Fogot Password
+    app.post('/api/forgotPassword', async (req, res, next) => {
+        // incoming: email
+        // outgoing: message or error
+
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Email address is required.' });
+        }
+
+        try {
+            const db = client.db('COP4331');
+            const users = db.collection('Users');
+
+            // Find the user by their email address.
+            const user = await users.findOne({ email: email });
+
+            if (!user) {
+                return res.status(404).json({ error: 'No account with that email address exists.' });
+            }
+
+            const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            const expirationTime = new Date(Date.now() + 15 * 60 * 1000);
+
+            await users.updateOne(
+                { _id: user._id },
+                {
+                    $set: {
+                        passwordResetCode: resetCode,
+                        passwordResetExpires: expirationTime
+                    }
+                }
+            );
+
+            const msg = {
+                to: user.email,
+                from: 'noreply@em1166.ucfgroup4.xyz',
+                subject: 'Your Password Reset Code',
+                text: `Your password reset code is ${resetCode}\n\n It will expire in 15 minutes.`,
+                html: `
+                <p>Your password reset code is:</p>
+                <p style="font-size: 26px; font-weight: bold;">${resetCode}</p>
+                <p>This code will expire in 15 minutes.</p>`,
+            };
+
+            await sgMail.send(msg);
+            console.log(`Password reset code sent to ${user.email}`);
+
+            res.status(200).json({ message: 'A password reset code has been sent to your email address.' });
+
+        } catch (err) {
+            console.error('Forgot Password API Error:', err);
+            if (err.response) {
+                console.error(err.response.body)
+            }
+            res.status(500).json({ error: 'An error occurred while attempting to send the reset code.' });
+        }
+    });
+
+    // Reset Password
+    app.post('/api/resetPassword', async (req, res, next) => {
+        // incoming: verification code , email, password
+        // outgoing: message or error
+        const { email, passwordResetCode, newPassword } = req.body;
+
+        if (!email || !passwordResetCode || !newPassword) {
+            return res.status(400).json({ error: 'Email, verification code, and new password are required.' });
+        }
+        try {
+            const db = client.db('COP4331');
+            const users = db.collection('Users');
+            const user = await users.findOne({
+                email: email,
+                passwordResetCode: passwordResetCode,
+                passwordResetExpires: { $gt: new Date() }
+            });
+            if (!user) {
+                return res.status(404).json({ error: 'Invalid or expired verification code!' });
+            }
+
+            await users.updateOne(
+                { _id: user._id },
+                {
+                    $set: {
+                        Password: newPassword
+                    },
+                    $unset: {
+                        passwordResetCode: "",
+                        passwordResetExpires: ""
+                    }
+                }
+            );
+
+            res.status(200).json({ message: 'Password has been reset!' });
+
+        }
+        catch (err) {
+            console.error('Reset Password API Error');
+            res.status(500).json({ error: 'An error occurred while attempting to send the reset code.' });
+        }
+    });
+
 
     app.get('/', (req, res) => {
         res.send('Server is running. Try POSTing to /api/login or /api/register');
     });
+    
+    // Save Grid Layout
     app.post('/api/saveGridLayout', async (req, res, next) => {
         const { UserID, layout, jwtToken } = req.body;
 
