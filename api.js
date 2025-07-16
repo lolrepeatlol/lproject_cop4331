@@ -359,7 +359,7 @@ exports.setApp = function (app, client) {
     app.get('/', (req, res) => {
         res.send('Server is running. Try POSTing to /api/login or /api/register');
     });
-    
+
     // Save Grid Layout
     app.post('/api/saveGridLayout', async (req, res, next) => {
         const { UserID, layout, jwtToken } = req.body;
@@ -405,7 +405,7 @@ exports.setApp = function (app, client) {
         }
     });
 
-
+    // Get Grid Layout
     app.post('/api/getGridLayout', async (req, res, next) => {
         const { UserID, jwtToken } = req.body;
 
