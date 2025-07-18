@@ -1,5 +1,5 @@
-import React, { useState, useEffect} from 'react';
-import './SoundUI.css';
+import React, { useState, useEffect } from 'react';
+import styles from './SoundUI.module.css';
 import { buildPath } from '../Path';
 import { retrieveToken, storeToken } from '../tokenStorage';
 
@@ -53,7 +53,7 @@ function SoundUI() {
       if (res.error) {
         setMessage(`API Error: ${res.error}`);
       } else {
-        setGridSounds(res.layout || Array(8).fill(null)); 
+        setGridSounds(res.layout || Array(8).fill(null));
         if (res.jwtToken) {
           storeToken(res.jwtToken);
         }
@@ -126,7 +126,7 @@ function SoundUI() {
     }
   };
 
-useEffect(() => {
+  useEffect(() => {
     const loadAndSave = async () => {
       if (!isGridLoaded) {
         await fetchGridLayout();
@@ -155,8 +155,8 @@ useEffect(() => {
   const openModal = (item: number) => {
     setSelectedGridItem(item);
     setIsModalOpen(true);
-    setSearchValue(''); 
-    setSearchResults([]); 
+    setSearchValue('');
+    setSearchResults([]);
   };
 
   const closeModal = () => {
@@ -168,19 +168,19 @@ useEffect(() => {
     if (selectedGridItem !== null) {
       const newGridSounds = [...gridSounds];
       newGridSounds[selectedGridItem - 1] = sound;
-      setGridSounds(newGridSounds); 
+      setGridSounds(newGridSounds);
 
       console.log(`Sound "${sound.soundName}" added to grid item ${selectedGridItem}`);
       closeModal();
     }
   };
-  
+
   const handleClearSound = (e: React.MouseEvent, index: number) => {
     e.stopPropagation();
 
     const newGridSounds = [...gridSounds];
     newGridSounds[index] = null;
-    setGridSounds(newGridSounds); 
+    setGridSounds(newGridSounds);
   };
 
   const handlePlaySound = (sound: Sound | null) => {
@@ -196,21 +196,21 @@ useEffect(() => {
     }
   };
 
-  return (
-    <div id="soundUIDiv">
+return (
+    <div className={styles.soundUiDiv}>
       <label htmlFor="Sound">Your Soundboard</label>
 
-      <div className="grid-container">
+      <div className={styles.gridContainer}>
         {gridSounds.map((sound, index) => (
           <div
             key={index}
-            className="grid-item"
+            className={styles.gridItem}
             onClick={() => !sound && openModal(index + 1)}
           >
             {sound ? (
-              <div className="sound-item-content">
+              <div className={styles.soundItemContent}>
                 <button
-                  className="play-button"
+                  className={styles.playButton}
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent modal from opening on play
                     handlePlaySound(sound);
@@ -218,14 +218,13 @@ useEffect(() => {
                 >
                   ▶
                 </button>
-                <span className="sound-name">{sound.soundName}</span>
+                <span className={styles.soundName}>{sound.soundName}</span>
                 <button
-                  className="clear-button"
+                  className={styles.clearButton}
                   onClick={(e) => handleClearSound(e, index)}
                 >
                   &times; {/* This is an "x" symbol */}
                 </button>
-
               </div>
             ) : (
               "+"
@@ -235,24 +234,24 @@ useEffect(() => {
       </div>
 
       {isModalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className={styles.modalOverlay} onClick={closeModal}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
               <h2>Add Sound to Grid Item {selectedGridItem}</h2>
-              <button onClick={closeModal} className="close-button">&times;</button>
+              <button onClick={closeModal} className={styles.closeButton}>&times;</button>
             </div>
-            <div className="modal-body">
+            <div className={styles.modalBody}>
               <input
                 type="text"
                 placeholder="Search for a sound..."
-                className="search-bar"
+                className={styles.searchBar}
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
               />
-              <div className="search-results">
+              <div className={styles.searchResults}>
                 {searchResults.length > 0 ? (
                   searchResults.map((soundResult) => (
-                    <div key={soundResult._id} className="search-result-item" onClick={() => handleSelectSound(soundResult)}>
+                    <div key={soundResult._id} className={styles.searchResultItem} onClick={() => handleSelectSound(soundResult)}>
                       {soundResult.soundName}
                     </div>
                   ))
@@ -261,7 +260,7 @@ useEffect(() => {
                 )}
               </div>
             </div>
-            {message && <p className="message">{message}</p>}
+            {message && <p className={styles.message}>{message}</p>}
           </div>
         </div>
       )}
