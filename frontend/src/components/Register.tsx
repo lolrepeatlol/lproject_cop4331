@@ -57,7 +57,7 @@ function Register() {
       // Assuming the register endpoint returns a token upon success
       if (res.accessToken) {
         const { accessToken } = res;
-        storeToken(res); 
+        storeToken(res);
         const decoded = jwtDecode<DecodedToken>(accessToken);
 
         const user = { firstName: decoded.firstName, lastName: decoded.lastName, email: decoded.email, isVerified: decoded.isVerified, id: decoded.UserID };
@@ -127,7 +127,7 @@ function Register() {
     }
     return true;
   }
-   return (
+  return (
     <div className={styles.registerPage}>
       <h1 className={styles.title}>Boardy</h1>
       <div className={styles.registerContainer}>
