@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { buildPath } from '../Path';
 import { storeToken } from '../tokenStorage';
 import { jwtDecode } from 'jwt-decode';
+import styles from './Register.module.css';
 
 // This interface expects the same token structure as login
 interface DecodedToken {
@@ -126,62 +127,80 @@ function Register() {
     }
     return true;
   }
-  return (
-    <div id="registerDiv">
-      <span id="inner-title">PLEASE REGISTER</span><br />
-      <form onSubmit={doRegister}>
-        First Name:
-        <input
-          type="text"
-          placeholder="First Name"
-          value={firstName}
-          onChange={handleSetFirstName}
-        /><br />
-        Last Name:
-        <input
-          type="text"
-          placeholder="Last Name"
-          value={lastName}
-          onChange={handleSetLastName}
-        /><br />
-        Email:
-        <input
-          type="text"
-          placeholder="Email"
-          value={email}
-          onChange={handleSetEmail}
-        /><br />
-        Username:
-        <input
-          type="text"
-          placeholder="Username"
-          value={loginName}
-          onChange={handleSetLoginName}
-        /><br />
-        Password:
-        <input
-          type="password"
-          placeholder="Password"
-          value={loginPassword}
-          onChange={handleSetPassword}
-        />
-        <br />
-        <input
-          type="submit"
-          id="registerButton"
-          className="buttons"
-          value="Sign Up"
-        />
-        <br />
-        <input
-          type="button"
-          id="backButton"
-          className="buttons"
-          value="Back to Login"
-          onClick={gotoLogin}
-        />
-      </form>
-      <span id="registerResult">{message}</span>
+   return (
+    <div className={styles.registerPage}>
+      <h1 className={styles.title}>Boardy</h1>
+      <div className={styles.registerContainer}>
+        <h1 className={styles.prompt}>Create Account</h1>
+        <p className={styles.subtitle}>Join us! It only takes a minute.</p>
+        <form onSubmit={doRegister} className={styles.registerForm}>
+          <div className={styles.inputGroup}>
+            <label htmlFor="firstName">First Name</label>
+            <input
+              type="text"
+              id="firstName"
+              placeholder="Enter your first name"
+              value={firstName}
+              onChange={handleSetFirstName}
+            />
+          </div>
+
+          <div className={styles.inputGroup}>
+            <label htmlFor="lastName">Last Name</label>
+            <input
+              type="text"
+              id="lastName"
+              placeholder="Enter your last name"
+              value={lastName}
+              onChange={handleSetLastName}
+            />
+          </div>
+
+          <div className={styles.inputGroup}>
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={handleSetEmail}
+            />
+          </div>
+
+          <div className={styles.inputGroup}>
+            <label htmlFor="registerName">Username</label>
+            <input
+              type="text"
+              id="registerName"
+              placeholder="Choose a username"
+              value={loginName}
+              onChange={handleSetLoginName}
+            />
+          </div>
+
+          <div className={styles.inputGroup}>
+            <label htmlFor="registerPassword">Password</label>
+            <input
+              type="password"
+              id="registerPassword"
+              placeholder="Create a password"
+              value={loginPassword}
+              onChange={handleSetPassword}
+            />
+          </div>
+
+          {message && <span className={styles.registerResult}>{message}</span>}
+
+          <button type="submit" className={styles.primaryButton}>
+            Sign Up
+          </button>
+        </form>
+        <div className={styles.extraActions}>
+          <button onClick={gotoLogin} className={styles.linkButton}>
+            Already have an account? Log In
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

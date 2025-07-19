@@ -177,6 +177,11 @@ function Login() {
       setModalMessage('Could not connect to the server. Please try again later.');
     }
   };
+const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  if (e.target === e.currentTarget) {
+    handleCloseModal();
+  }
+};
 
 
 
@@ -223,8 +228,14 @@ function Login() {
       </div>
 
       {isModalOpen && (
-        <div className={styles.modalOverlay}>
+        // When this overlay is clicked, the modal will close
+        <div className={styles.modalOverlay} onClick={handleOverlayClick}>
           <div className={styles.modalContent}>
+            {/* New close button in the top-right corner */}
+            <button className={styles.closeButton} onClick={handleCloseModal}>
+              &times;
+            </button>
+
             {modalStep === 'enterEmail' ? (
               <>
                 <h2>Reset Password</h2>
@@ -241,7 +252,6 @@ function Login() {
                     onChange={(e) => setResetEmail(e.target.value)}
                   />
                   <div className={styles.modalActions}>
-                    <button type="button" className={styles.secondaryButton} onClick={handleCloseModal}>Close</button>
                     <button type="submit" className={styles.primaryButton}>Send Code</button>
                   </div>
                 </form>
@@ -270,7 +280,6 @@ function Login() {
                     onChange={(e) => setNewPassword(e.target.value)}
                   />
                   <div className={styles.modalActions}>
-                    <button type="button" className={styles.secondaryButton} onClick={handleCloseModal}>Close</button>
                     <button type="submit" className={styles.primaryButton}>Reset Password</button>
                   </div>
                 </form>

@@ -1,16 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700&display=swap');
 
 html,
 body {
-  background-image: url('../assets/background.png');
+  background-image: url('../assets/background.jpg');
   background-repeat: no-repeat;
   background-position: center center;
   background-attachment: fixed;
   background-size: cover;
   margin: 0;
   padding: 0;
-  overflow: hidden !important;
-  height: 100vh;
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* Element to dim the background */
@@ -33,38 +33,38 @@ html::before {
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 2rem;
+  padding: 2rem 1rem;
   box-sizing: border-box;
-  height: 100vh;
+  height: 100%;
+  width: 100%;
 }
 
 .title {
-  font-size: 100px;
+  font-size: clamp(2.5rem, 10vw, 5.625rem);
+  /* min, preferred, max (90px) */
   text-align: center;
   color: #ffffff;
   text-shadow: 8px 8px 12px #000000;
-  margin-bottom: 3rem;
-  margin-top: 0;
-  width: 60%;
-  display: block;
+  margin: 0 0 2rem 0;
+  max-width: 100%;
 }
 
 .loginContainer {
-  position: relative;
-  margin: 0 auto;
-  padding: 3rem;
-  background-color: rgba(28, 28, 30, 0.85);
-  backdrop-filter: blur(15px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  width: 100%;
-  max-width: 500px;
-  text-align: center;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    position: relative;
+    padding: clamp(1.5rem, 5vw, 3rem);
+    background-color: rgba(28, 28, 30, 0.85);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    border: 1px solid rgba(28, 28, 30, 0.85);
+    width: 160%;
+    max-width: 700px;
+    text-align: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    box-sizing: border-box;
 }
 
 .prompt {
-  font-size: 3rem;
+  font-size: clamp(1.8rem, 6vw, 3rem);
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 0.2rem;
@@ -153,7 +153,7 @@ html::before {
   border: none;
   color: #a0a0a0;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1rem;
   transition: color 0.3s ease;
 }
 
@@ -165,7 +165,7 @@ html::before {
 .loginResult {
   color: #FF6B6B;
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1rem;
   margin-top: -0.5rem;
   margin-bottom: 0.5rem;
   text-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
@@ -189,6 +189,7 @@ html::before {
 }
 
 .modalContent {
+  position: relative;
   background-color: #1c1c1e;
   padding: 2rem;
   border-radius: 16px;
@@ -197,6 +198,24 @@ html::before {
   max-width: 400px;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
   color: white;
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #a0a0a0;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.3s ease;
+}
+
+.closeButton:hover {
+  color: #ffffff;
 }
 
 .modalContent h2 {
@@ -222,22 +241,6 @@ html::before {
   margin-top: 1rem;
 }
 
-.secondaryButton {
-  padding: 10px 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #e0e0e0;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.secondaryButton:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
 .modalMessage {
   display: block;
   margin-top: 1rem;
@@ -247,50 +250,18 @@ html::before {
   text-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
 }
 
-/* --- Responsive Styles --- */
-@media (max-width: 768px) {
-  .title {
-    margin-top: -3rem;
-    margin-bottom: 2rem;
-  }
-
+@media only screen and (max-width: 600px) {
   .loginContainer {
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 450px;
-  }
-
-  .prompt {
-    font-size: 2.8rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .title {
-    margin-top: -2rem;
-    margin-bottom: 1.5rem;
-    text-shadow:
-      1px 1px 0px rgba(0, 0, 0, 0.4),
-      4px 4px 4px rgba(0, 0, 0, 0.3);
-  }
-
-  .loginContainer {
-    padding: 1.5rem;
-    width: 90%;
-    max-width: 400px;
-  }
-
-  .prompt {
-    font-size: 2.2rem;
-  }
-
-  .subtitle {
-    margin-bottom: 1.5rem;
-  }
-
-  .loginForm {
-    gap: 1rem;
+    position: relative;
+    padding: clamp(1.5rem, 5vw, 3rem);
+    background-color: rgba(28, 28, 30, 0.85);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    border: 1px solid rgba(28, 28, 30, 0.85);
+    width: 100%;
+    max-width: 700px;
+    text-align: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    box-sizing: border-box;
   }
 }
