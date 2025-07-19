@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { buildPath } from '../Path';
 import { storeToken } from '../tokenStorage';
 import { jwtDecode } from 'jwt-decode';
+import styles from './Login.module.css';
 
 interface DecodedToken {
   UserID: number;
@@ -85,6 +86,7 @@ function Login() {
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
+    setMessage('');
     setModalMessage('');
     setModalStep('enterEmail');
   };
@@ -129,7 +131,7 @@ function Login() {
   const handleVerifyAndReset = async (event: React.FormEvent) => {
     event.preventDefault();
     if (newPassword.length < 8) {
-      setModalMessage("Password Must be at least 8 characters");
+      setModalMessage("Password must be at least 8 characters");
       return;
     }
 
@@ -179,92 +181,102 @@ function Login() {
 
 
   return (
-    <div id="loginDiv">
-      <span id="inner-title">PLEASE LOG IN</span><br />
-      <form onSubmit={doLogin}>
-        Login: <input
-          type="text"
-          id="loginName"
-          placeholder="Username"
-          value={loginName}
-          onChange={handleSetLoginName}
-        /><br />
-        Password: <input
-          type="password"
-          id="loginPassword"
-          placeholder="Password"
-          value={loginPassword}
-          onChange={handleSetPassword}
-        />
-        <br />
-        <input
-          type="submit"
-          id="loginButton"
-          className="buttons"
-          value="Log in"
-        />
-      </form>
-      <span id="loginResult">{message}</span>
-      <input
-        type="button"
-        id="registerButton"
-        className="buttons"
-        value="Register"
-        onClick={handleRegister}
-      />
-      <br />
-      <input
-        type="button"
-        id="forgotButton"
-        className="buttons"
-        value="Forgot Password?"
-        onClick={handleOpenModal}
-      />
+    <div className={styles.loginPage}>
+      <h1 className={styles.title}>Boardy</h1>
+      <div className={styles.loginContainer}>
+        <h1 className={styles.prompt}>Welcome</h1>
+        <p className={styles.subtitle}>Please log in to continue</p>
+        <form onSubmit={doLogin} className={styles.loginForm}>
+          <div className={styles.inputGroup}>
+            <label htmlFor="loginName">Username</label>
+            <input
+              type="text"
+              id="loginName"
+              placeholder="Enter your username"
+              value={loginName}
+              onChange={handleSetLoginName}
+            />
+          </div>
+          <div className={styles.inputGroup}>
+            <label htmlFor="loginPassword">Password</label>
+            <input
+              type="password"
+              id="loginPassword"
+              placeholder="Enter your password"
+              value={loginPassword}
+              onChange={handleSetPassword}
+            />
+          </div>
+          {message && <span className={styles.loginResult}>{message}</span>}
+          <button type="submit" className={styles.primaryButton}>
+            Log In
+          </button>
+        </form>
+        <div className={styles.extraActions}>
+          <button onClick={handleOpenModal} className={styles.linkButton}>
+            Forgot Password?
+          </button>
+          <button onClick={handleRegister} className={styles.linkButton}>
+            Don't have an account? Sign Up
+          </button>
+        </div>
+      </div>
+
       {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
             {modalStep === 'enterEmail' ? (
               <>
                 <h2>Reset Password</h2>
-                <p>Enter your email address to receive a password reset code.</p>
+                <label htmlFor="resetEmail" style={{ display: 'block', marginBottom: '1rem' }}>
+                  Enter your email to receive a reset code.
+                </label>
                 <form onSubmit={handleSendVerificationCode}>
                   <input
+                    id="resetEmail"
+                    name="resetEmail"
                     type="email"
                     placeholder="your.email@example.com"
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                   />
-                  <div className="modal-actions">
-                    <button type="submit" className="buttons">Send Code</button>
-                    <button type="button" className="buttons" onClick={handleCloseModal}>Close</button>
+                  <div className={styles.modalActions}>
+                    <button type="button" className={styles.secondaryButton} onClick={handleCloseModal}>Close</button>
+                    <button type="submit" className={styles.primaryButton}>Send Code</button>
                   </div>
                 </form>
               </>
             ) : (
               <>
                 <h2>Enter Verification Code</h2>
-                <p>Check your email for the code we sent to {resetEmail}.</p>
+                <p>Check your email for the code sent to {resetEmail}.</p>
                 <form onSubmit={handleVerifyAndReset}>
+                  <label htmlFor="verificationCode" style={{ display: 'none' }}>Verification Code</label>
                   <input
+                    id="verificationCode"
+                    name="verificationCode"
                     type="text"
                     placeholder="Verification Code"
                     value={verificationCode}
                     onChange={(e) => setVerificationCode(e.target.value)}
                   />
+                  <label htmlFor="newPassword" style={{ display: 'none' }}>New Password</label>
                   <input
+                    id="newPassword"
+                    name="newPassword"
                     type="password"
                     placeholder="Enter new password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                   />
-                  <div className="modal-actions">
-                    <button type="submit" className="buttons">Reset Password</button>
-                    <button type="button" className="buttons" onClick={handleCloseModal}>Close</button>
+                  <div className={styles.modalActions}>
+                    <button type="button" className={styles.secondaryButton} onClick={handleCloseModal}>Close</button>
+                    <button type="submit" className={styles.primaryButton}>Reset Password</button>
                   </div>
                 </form>
               </>
             )}
-            {modalMessage && <span className="modal-message">{modalMessage}</span>}
+            {modalMessage && <span className={styles.modalMessage}>{modalMessage}</span>}
           </div>
         </div>
       )}

@@ -1,0 +1,115 @@
+/* Main Component Styles */
+.soundUiDiv {
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.soundUiDiv label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: bold;
+  font-size: 18px;
+  color: #000000;
+}
+
+/* Grid Styles */
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+.gridItem {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #aaa;
+  background-color: #fff;
+  padding: 20px;
+  aspect-ratio: 1 / 1;
+  color: #000000;
+  font-size: 24px;
+  font-family: sans-serif;
+  cursor: pointer;
+}
+
+/* Sound Item (inside a grid item) */
+.soundItemContent {
+  position: relative; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
+
+.soundName {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.playButton {
+  background-color: #4caf50;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-bottom: 5px;
+}
+
+.playButton:hover {
+  background-color: #45a049;
+}
+
+.clearButton {
+  position: absolute;
+  top: 0;
+  right: 5px;
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.clearButton:hover {
+  color: #ff0000;
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modalContent {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: black;
+}
+
+.modalHeader h2 {
+  color: black;
+}
