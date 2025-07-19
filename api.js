@@ -4,6 +4,28 @@ const { ObjectId } = require('mongodb');
 const token = require("./createJWT.js");
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const { parseFile } = require('music-metadata');
+
+//Multer Configuration
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+}
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadsDir);
+    },
+    filename: function (req, file, cb) {
+        // Create a unique filename to avoid overwrites: timestamp + original name
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+
+const upload = multer({ storage: storage });
+
 
 exports.setApp = function (app, client) {
     // Login
@@ -467,9 +489,68 @@ exports.setApp = function (app, client) {
             res.status(500).json({ error: 'Server error while retrieving layout.' });
         }
     });
+    app.post('/api/uploadSound', upload.single('soundFile'), async (req, res) => {
+        // Check if a file was uploaded
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded.' });
+        }
 
-    app.get('/', (req, res) => {
-        res.send('Server is running. Try POSTing to /api/login or /api/register');
+        // --- DURATION CHECK ---
+        try {
+            const metadata = await parseFile(req.file.path);
+            const durationInSeconds = metadata.format.duration;
+            const DURATION_LIMIT = 5; // in seconds
+
+            // This prevents errors if the duration is undefined.
+            if (durationInSeconds && durationInSeconds > DURATION_LIMIT) {
+                fs.unlinkSync(req.file.path);
+                return res.status(413).json({ error: `Sound is too long. Limit is ${DURATION_LIMIT} seconds.` });
+            }
+        } catch (error) {
+            fs.unlinkSync(req.file.path);
+            console.error("Error reading audio metadata:", error);
+            return res.status(400).json({ error: 'Invalid file type or corrupt file.' });
+        }
+
+        // Authenticate the user with JWT
+        const { UserID, jwtToken } = req.body;
+        try {
+            if (token.isExpired(jwtToken)) {
+                fs.unlinkSync(req.file.path);
+                return res.status(401).json({ error: 'The JWT is no longer valid', jwtToken: '' });
+            }
+        } catch (e) {
+            fs.unlinkSync(req.file.path);
+            return res.status(401).json({ error: 'Invalid JWT', jwtToken: '' });
+        }
+
+        // Save the sound record to the database
+        try {
+            const db = client.db('COP4331');
+            const collection = db.collection('Sounds');
+            const numericUserId = parseInt(UserID, 10);
+
+            const newSound = {
+                soundName: path.parse(req.file.originalname).name,
+                path: `/uploads/${req.file.filename}`,
+                UserID: numericUserId,
+                isDefault: false,
+            };
+
+            const result = await collection.insertOne(newSound);
+            const refreshedToken = token.refresh(jwtToken);
+
+            res.status(201).json({
+                message: 'File uploaded successfully!',
+                newSound: { ...newSound, _id: result.insertedId },
+                jwtToken: refreshedToken
+            });
+
+        } catch (e) {
+            fs.unlinkSync(req.file.path);
+            console.error('File upload API error:', e);
+            res.status(500).json({ error: 'Server error during file upload.' });
+        }
     });
 
 }
