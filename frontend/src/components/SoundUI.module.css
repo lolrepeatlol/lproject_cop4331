@@ -39,7 +39,7 @@
 
 /* Sound Item (inside a grid item) */
 .soundItemContent {
-  position: relative; 
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -52,6 +52,7 @@
 .soundName {
   font-size: 14px;
   font-weight: bold;
+  color: black;
 }
 
 .playButton {
@@ -112,4 +113,12 @@
 
 .modalHeader h2 {
   color: black;
+}
+
+p {
+  color: black;
+}
+
+.fileInput {
+  color: #000000;
 }

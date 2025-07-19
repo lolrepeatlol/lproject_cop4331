@@ -19,8 +19,11 @@ function SoundUI() {
   const [searchValue, setSearchValue] = useState('');
   const [searchResults, setSearchResults] = useState<Sound[]>([]);
   const [gridSounds, setGridSounds] = useState<(Sound | null)[]>(Array(8).fill(null));
-  const [isGridLoaded, setIsGridLoaded] = useState(false); // 
+  const [isGridLoaded, setIsGridLoaded] = useState(false);
 
+  // --- State for the new upload feature ---
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadMessage, setUploadMessage] = useState('');
 
   const getUserID = (): string | null => {
     const userData = localStorage.getItem('user_data');
@@ -30,6 +33,55 @@ function SoundUI() {
     }
     const user = JSON.parse(userData);
     return user.id;
+  };
+
+  // --- New function to handle file upload ---
+  const handleUpload = async () => {
+    const UserID = getUserID();
+    if (!UserID) {
+      setUploadMessage('You must be logged in to upload a file.');
+      return;
+    }
+    if (!selectedFile) {
+      setUploadMessage('Please select a file to upload first.');
+      return;
+    }
+
+    // FormData is required for file uploads
+    const formData = new FormData();
+    formData.append('soundFile', selectedFile); // This key 'soundFile' must match the server's multer config
+    formData.append('UserID', UserID);
+    formData.append('jwtToken', retrieveToken() || '');
+
+    setUploadMessage('Uploading...');
+
+    try {
+      const response = await fetch(buildPath('api/uploadSound'), {
+        method: 'POST',
+        body: formData,
+        // DO NOT set 'Content-Type' header, the browser does it automatically for FormData
+      });
+
+      const res = await response.json();
+      if (response.status !== 201) {
+        setUploadMessage(`Error: ${res.error || 'Upload failed'}`);
+      } else {
+        setUploadMessage(`Success! "${res.newSound.soundName}" was uploaded.`);
+        if (res.jwtToken) {
+          storeToken(res.jwtToken);
+        }
+      }
+    } catch (error: any) {
+      setUploadMessage(`An error occurred: ${error.toString()}`);
+    }
+  };
+
+  // --- Function to handle file selection ---
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0]);
+      setUploadMessage('');
+    }
   };
 
   // --- Function to get the grid layout from the API ---
@@ -196,8 +248,30 @@ function SoundUI() {
     }
   };
 
-return (
+  return (
     <div className={styles.soundUiDiv}>
+
+      {/* --- New Uploader UI --- */}
+      <div className={styles.uploadContainer}>
+        <label htmlFor="soundUploader">Upload New Sound</label>
+        <div className={styles.uploadControls}>
+          <input
+            id="soundUploader"
+            type="file"
+            accept="audio/*"
+            onChange={handleFileChange}
+            className={styles.fileInput}
+          />
+          <button onClick={handleUpload} className={styles.uploadButton} disabled={!selectedFile}>
+            Upload
+          </button>
+        </div>
+        {uploadMessage && <p className={styles.uploadMessage}>{uploadMessage}</p>}
+      </div>
+      {/* --- End of Uploader UI --- */}
+
+      <hr className={styles.divider} />
+
       <label htmlFor="Sound">Your Soundboard</label>
 
       <div className={styles.gridContainer}>
