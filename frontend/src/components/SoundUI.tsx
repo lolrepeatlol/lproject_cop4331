@@ -67,7 +67,11 @@ function SoundUI() {
         setUploadMessage(`Error: ${res.error || 'Upload failed'}`);
       } else {
         setUploadMessage(`Success! "${res.newSound.soundName}" was uploaded.`);
-        setUploadMessage(``);
+        
+        setTimeout(() => {
+          setUploadMessage('');
+        }, 3000);
+        
         if (res.jwtToken) {
           storeToken(res.jwtToken);
         }
