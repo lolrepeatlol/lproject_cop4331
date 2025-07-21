@@ -306,8 +306,6 @@ function SoundUI() {
                     <path d="M5 3l14 9-14 9V3z"></path>
                   </svg>
                 </button>
-
-                {/* --- FIX: Restored Sound Name and Clear Button --- */}
                 <span className={styles.soundName}>{sound.soundName}</span>
                 <button
                   className={styles.clearButton}
@@ -323,8 +321,6 @@ function SoundUI() {
           </div>
         ))}
       </div>
-
-      {/* --- Sound Selection Modal --- */}
       {isModalOpen && (
         <div className={styles.modalOverlay} onClick={closeModal}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>

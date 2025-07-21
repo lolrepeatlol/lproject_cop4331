@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { retrieveToken } from '../tokenStorage';
+import styles from './LoggedInName.module.css';
 
 
 interface DecodedToken {
@@ -28,10 +29,15 @@ function LoggedInName() {
   };
 
   return (
-    <div id="loggedInDiv">
-      <span id="userName">Welcome {userName}</span><br />
-      <button type="button" id="logoutButton" className="buttons"
-        onClick={doLogout}> Log Out </button>
+    <div className={styles.loggedInContainer}>
+      <span className={styles.userName}>Welcome {userName}</span>
+      <button
+        type="button"
+        className={styles.logoutButton}
+        onClick={doLogout}
+      >
+        Log Out
+      </button>
     </div>
   );
 };
