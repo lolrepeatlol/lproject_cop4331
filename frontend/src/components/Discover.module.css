@@ -1,9 +1,135 @@
-.discoverContainer {
-  background-color: black;
-  color: white;
-  padding: 2rem;
+
+.soundSections {
   position: absolute;
-  top: 50%;
+  top: 55%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20pxx;
+  gap: 2rem;
+  padding: 2rem;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.heroContent {
+  position: relative;
+  top: 100%;
   left: 50%;
   transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 1;
+  width: 100%;
+  padding: 2rem 1rem;
+}
+
+.heroTitle {
+  color: white;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+/* Search bar wrapper */
+.searchBar {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* Input styling */
+.searchInput {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 25px;
+  background-color: #050505;
+  border: none;
+  width: 250px;
+}
+
+/* Button styling */
+.searchButton {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 25px;
+  background-color: #050505;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+
+
+.soundCategory {
+  background-color: #1e1e1e;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(201, 67, 132, 0.15);
+}
+
+.categoryTitle {
+  color: #ffffff;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.soundList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.soundCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: #2a2a31;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 15px rgba(201, 43, 130, 0.578);
+  min-width: 250px;
+  flex: 1 1 auto;
+}
+
+.playButton {
+  background-color: #3a3a40;
+  border: none;
+  border-radius: 50%;
+  width: 2.2rem;
+  height: 2.2rem;
+  font-size: 1rem;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.playButton:hover {
+  transform: scale(1.1);
+}
+
+.soundName {
+  color: #ffffff;
+  font-size: 1rem;
+  flex-grow: 1;
+  font-family: sans-serif;
+}
+
+.addButton {
+  background-color: #b13478;
+  color: white;
+  font-size: 1.25rem;
+  border: none;
+  border-radius: 0.5rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 10px rgba(177, 52, 120, 0.3);
+}
+
+.addButton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 16px rgba(177, 52, 120, 0.5);
 }
