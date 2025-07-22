@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'services/auth_service.dart';
-import 'login_page.dart';
-import 'library_screen.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'services/auth_service.dart';
+import 'services/session.dart';
+import 'library_screen.dart';
+import 'discover_screen.dart';
+import 'about_screen.dart';
+import 'login_page.dart';
 
 void main() => runApp(const MyApp());
 
@@ -14,9 +17,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  bool    isLoggedIn = false;
-  String? jwtToken, firstName, lastName;
-  int?    userId;
+  bool    _loggedIn = false;
+  String? _firstName, _lastName;
 
   @override
   void initState() {
@@ -26,42 +28,30 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _restoreSession() async {
     final prefs = await SharedPreferences.getInstance();
-    final storedToken = prefs.getString('jwtToken');
+    final hasToken = (await Session.token()).isNotEmpty;
     setState(() {
-      isLoggedIn = (prefs.getBool('isLoggedIn') ?? false) && storedToken != null;
-      jwtToken   = storedToken;
-      firstName  = prefs.getString('firstName');
-      lastName   = prefs.getString('lastName');
-      userId     = prefs.getInt('userId');
+      _loggedIn   = hasToken;
+      _firstName  = prefs.getString('firstName');
+      _lastName   = prefs.getString('lastName');
     });
   }
 
-  Future<void> _loginCallback({
+  Future<void> _login({
     required String login,
     required String password,
   }) async {
     final data = await AuthService.login(login, password);
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', true);
-    await prefs.setString('jwtToken', data['jwtToken'] as String);
-    await prefs.setString('firstName', data['firstName'] as String);
-    await prefs.setString('lastName', data['lastName'] as String);
-    await prefs.setInt('userId', data['id'] as int);
-
     setState(() {
-      isLoggedIn = true;
-      jwtToken   = data['jwtToken'] as String;
-      firstName  = (data['firstName'] as String?) ?? '';
-      lastName   = (data['lastName']  as String?) ?? '';
-      userId     = data['id'] as int;
+      _loggedIn  = true;
+      _firstName = data['firstName'] as String?;
+      _lastName  = data['lastName']  as String?;
     });
   }
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    setState(() => isLoggedIn = false);
+    await prefs.clear();              // clears jwt, uid, names
+    setState(() => _loggedIn = false);
   }
 
   @override
@@ -94,25 +84,22 @@ class _MyAppState extends State<MyApp> {
             fontWeight: FontWeight.w600,
             color: CupertinoColors.white,
           ),
-          // Add more as needed (pickerTextStyle, actionTextStyle, etc.)
         ),
       ),
-      home: isLoggedIn
+      home: _loggedIn
           ? HomePage(
         onLogout: _logout,
-        firstName: firstName ?? '',
-        lastName: lastName ?? '',
+        firstName: _firstName ?? '',
+        lastName:  _lastName  ?? '',
       )
-          : LoginPage(onLogin: _loginCallback),
+          : LoginPage(onLogin: _login),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
-  final VoidCallback onLogout;
-  final String firstName;
-  final String lastName;
+/* ───────────────────────── Home with bottom‑nav ───────────────────────── */
 
+class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
     required this.onLogout,
@@ -120,96 +107,49 @@ class HomePage extends StatefulWidget {
     required this.lastName,
   });
 
+  final VoidCallback onLogout;
+  final String firstName;
+  final String lastName;
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 1; // Library as default
+  int _tab = 1; // Library default
 
   @override
   Widget build(BuildContext context) {
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
         activeColor: const Color(0xFF943872),
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        currentIndex: _tab,
+        onTap: (i) => setState(() => _tab = i),
         items: [
-          BottomNavigationBarItem(
-            icon: SizedBox(
-              height: 40,
-              child: Center(
-                child: PhosphorIcon(PhosphorIcons.listMagnifyingGlass()),
-              ),
-            ),
-            label: 'Discover',
-          ),
-          BottomNavigationBarItem(
-            icon: SizedBox(
-              height: 40,
-              child: Center(
-                child: PhosphorIcon(PhosphorIcons.waveform()),
-              ),
-            ),
-            label: 'Library',
-          ),
-          BottomNavigationBarItem(
-            icon: SizedBox(
-              height: 40,
-              child: Center(
-                child: PhosphorIcon(PhosphorIcons.info()),
-              ),
-            ),
-            label: 'About',
-          ),
+          _item(PhosphorIcons.listMagnifyingGlass(), 'Discover'),
+          _item(PhosphorIcons.waveform(),             'Library'),
+          _item(PhosphorIcons.info(),                 'About'),
         ],
       ),
-      tabBuilder: (context, index) {
+      tabBuilder: (_, index) {
         switch (index) {
-          case 0:
-            return const DiscoverScreen();
-          case 1:
-            return LibraryScreen(
-              onLogout: widget.onLogout,
-              firstName: widget.firstName,
-              lastName: widget.lastName,
-            );
-          case 2:
-            return const AboutScreen();
-          default:
-            return const DiscoverScreen();
+          case 0:  return const DiscoverScreen();
+          case 1:  return LibraryScreen(
+            onLogout: widget.onLogout,
+            firstName: widget.firstName,
+            lastName:  widget.lastName,
+          );
+          default: return const AboutScreen();
         }
       },
     );
   }
-}
 
-class DiscoverScreen extends StatelessWidget {
-  const DiscoverScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Discover'),
-      ),
-      child: const Center(child: Text('Discover Page')),
-    );
-  }
-}
-
-class AboutScreen extends StatelessWidget {
-  const AboutScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('About'),
-      ),
-      child: const Center(child: Text('About Page')),
-    );
-  }
+  BottomNavigationBarItem _item(IconData icon, String label) => BottomNavigationBarItem(
+    icon: SizedBox(
+      height: 40,
+      child: Center(child: PhosphorIcon(icon)),
+    ),
+    label: label,
+  );
 }
