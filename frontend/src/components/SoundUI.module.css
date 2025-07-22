@@ -34,6 +34,7 @@ body {
   font-weight: 700;
   color: #ffffff;
   margin: 0;
+  margin-top: 20%;
 }
 
 .UploadButton {
@@ -41,7 +42,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: #8A2BE2;
+  background-color: #b13478; 
   color: #ffffff;
   border: none;
   border-radius: 50px;
@@ -53,7 +54,7 @@ body {
 }
 
 .UploadButton:hover {
-  background-color: #7B24CB;
+  background-color: #9d2d6a; 
 }
 
 .uploadMessage {
@@ -92,9 +93,8 @@ body {
 .gridItem:hover {
   background-color: #333333;
   transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+  box-shadow: 0 0 20px rgba(177, 52, 120, 0.7); 
   z-index: 10;
-
 }
 
 .gridItem:nth-child(8n+1),
@@ -129,19 +129,18 @@ body {
   font-size: 18px;
   font-weight: bold;
   color: #ffffff;
-
 }
 
 .playButton {
   background-color: transparent;
   border: none;
-  color: #8A2BE2;
+  color: #b13478;
   width: 60px;
   height: 60px;
   font-size: 16px;
   border-radius: 50%;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, color 0.3s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -149,7 +148,8 @@ body {
 }
 
 .playButton:hover {
-  background-color: #7B24CB;
+  background-color: rgba(177, 52, 120, 0.2);
+  color: #c93b88;
 }
 
 /*MODAL STYLES*/
@@ -213,8 +213,8 @@ body {
 
 .searchBar:focus {
   outline: none;
-  border-color: #8A2BE2;
-  box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.3);
+  border-color: #b13478; 
+  box-shadow: 0 0 0 3px rgba(177, 52, 120, 0.3); 
 }
 
 /* --- Search Results Styling --- */
@@ -262,7 +262,7 @@ body {
 }
 
 .clearButton:hover {
-  background-color: #7B24CB;
+  background-color: #9d2d6a;
   color: #ffffff;
   transform: scale(1.1);
 }
@@ -286,5 +286,6 @@ body {
 }
 
 .closeButton:hover {
-  background-color: #7B24CB;
+  color: white;
+  background-color: #9d2d6a; 
 }

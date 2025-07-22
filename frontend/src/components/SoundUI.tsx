@@ -256,7 +256,6 @@ function SoundUI() {
       audio.play().catch(e => console.error("Error playing sound:", e));
     }
   };
-
   return (
     <div className={styles.soundUiDiv}>
       <div className={styles.headerContainer}>

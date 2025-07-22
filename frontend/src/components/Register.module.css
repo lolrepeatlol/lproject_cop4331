@@ -97,8 +97,8 @@ body {
 .registerContainer input[type='password']:focus,
 .registerContainer input[type='email']:focus {
     outline: none;
-    border-color: #a020f0;
-    box-shadow: 0 0 0 3px rgba(160, 32, 240, 0.3);
+    border-color: #b13478;
+    box-shadow: 0 0 0 3px rgba(177, 52, 120, 0.3);
 }
 
 /* --- Button Styles --- */
@@ -107,7 +107,7 @@ body {
     font-size: 1rem;
     font-weight: 500;
     color: #ffffff;
-    background-color: #8a2be2;
+    background-color: #b13478;
     border: none;
     border-radius: 10px;
     cursor: pointer;
@@ -116,7 +116,7 @@ body {
 }
 
 .primaryButton:hover {
-    background-color: #7b24cb;
+    background-color: #9d2d6a;
 }
 
 .extraActions {
@@ -151,6 +151,7 @@ body {
 
 /* --- Responsive Media Query --- */
 @media only screen and (max-width: 1300px) {
+
     html,
     body {
         overflow-y: auto;
@@ -163,7 +164,7 @@ body {
         justify-content: flex-start;
         transform: scale(0.9);
         padding: 2rem 1rem;
-        min-width:200px;
+        min-width: 200px;
     }
 
     .registerContainer {

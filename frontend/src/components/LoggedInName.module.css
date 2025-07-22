@@ -18,15 +18,14 @@
   font-size: 1rem;
   font-weight: 500;
   color: #ffffff;
-  background-color: #8A2BE2;
+  background-color: #b13478; 
   border: none;
   border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  margin-top: 1rem;
 }
 
 /* Hover effect for the logout button */
 .logoutButton:hover {
-  background-color: #7B24CB;
+  background-color: #9d2d6a; 
 }

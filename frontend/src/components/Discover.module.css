@@ -1,44 +1,44 @@
-
-.soundSections {
-  position: absolute;
-  top: 55%;
-  left: 0;
-  width: 100%;
-  height: 100%;
+.discoverContainer {
   display: flex;
   flex-direction: column;
-  border-radius: 20pxx;
-  gap: 2rem;
-  padding: 2rem;
-  background-color: rgba(0, 0, 0, 0.7);
+  height: 100vh;
+  padding-top: 5rem;
+  box-sizing: border-box;
 }
 
 .heroContent {
-  position: relative;
-  top: 100%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   text-align: center;
-  z-index: 1;
   width: 100%;
-  padding: 2rem 1rem;
+  padding: 1.5rem 1rem;
+  flex-shrink: 0;
+  margin-bottom: 3rem;
+}
+
+.soundSections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1.5rem;
+  background-color: rgb(12, 12, 14);
+  border-radius: 20px 20px 0 0;
+  overflow-y: auto;
+  flex-grow: 1;
+  justify-content: flex-start;
 }
 
 .heroTitle {
   color: white;
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: bold;
   margin-bottom: 1rem;
 }
 
-/* Search bar wrapper */
 .searchBar {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
 }
 
-/* Input styling */
 .searchInput {
   padding: 0.75rem 1rem;
   font-size: 1rem;
@@ -48,7 +48,6 @@
   width: 250px;
 }
 
-/* Button styling */
 .searchButton {
   padding: 0.75rem 1rem;
   font-size: 1rem;
@@ -59,74 +58,85 @@
   cursor: pointer;
 }
 
-
-
-.soundCategory {
-  background-color: #1e1e1e;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 0 20px rgba(201, 67, 132, 0.15);
-}
-
 .categoryTitle {
   color: #ffffff;
-  font-size: 1.4rem;
-  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
   font-weight: 600;
 }
 
 .soundList {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 1rem;
 }
 
 .soundCard {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   background-color: #2a2a31;
-  padding: 0.75rem 1rem;
+  padding: 0.4rem 0.9rem;
   border-radius: 1rem;
-  box-shadow: 0 0 15px rgba(201, 43, 130, 0.578);
-  min-width: 250px;
-  flex: 1 1 auto;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.soundCard:hover {
+  box-shadow: 0 0 15px rgba(201, 43, 130, 0.8);
 }
 
 .playButton {
-  background-color: #3a3a40;
+  background-color: transparent;
   border: none;
+  color: #b13478;
+  width: 60px;
+  height: 60px;
+  font-size: 20px;
   border-radius: 50%;
-  width: 2.2rem;
-  height: 2.2rem;
-  font-size: 1rem;
-  color: white;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: background-color 0.3s, color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
 }
 
 .playButton:hover {
+  background-color: rgba(177, 52, 120, 0.2);
+  color: #c93b88;
   transform: scale(1.1);
+}
+
+.playButton svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  color: #b13478;
 }
 
 .soundName {
   color: #ffffff;
-  font-size: 1rem;
+  font-size: 0.9rem;
   flex-grow: 1;
   font-family: sans-serif;
 }
 
 .addButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background-color: #b13478;
   color: white;
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   border: none;
-  border-radius: 0.5rem;
-  width: 2.2rem;
-  height: 2.2rem;
+  border-radius: 10%;
+  width: 2rem;
+  height: 2rem;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 0 10px rgba(177, 52, 120, 0.3);
+  margin-top: auto;
+  margin-bottom:auto;
 }
 
 .addButton:hover {
