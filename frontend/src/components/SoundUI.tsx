@@ -249,7 +249,7 @@ function SoundUI() {
       const baseUrl = window.location.origin;
       let soundLink = `http://localhost:5000${sound.path}`;
       if (!(baseUrl.includes("localhost"))) {
-        soundLink = `https://ucfgroup4.xyz${sound.path}`;
+        soundLink = `http://ucfgroup4.xyz${sound.path}`;
       }
       console.log('Playing sound from:', soundLink);
       const audio = new Audio(soundLink);
