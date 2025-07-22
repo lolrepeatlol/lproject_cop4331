@@ -140,13 +140,14 @@ const Discover = () => {
     }
   };
 
-  const handlePlaySound = (sound: Sound) => {
+  const handlePlaySound = (sound: Sound | null) => {
     if (sound && sound.path) {
       const baseUrl = window.location.origin;
-      const soundLink = baseUrl.includes("localhost")
-        ? `http://localhost:5000${sound.path}`
-        : `httpit://ucfgroup4.xyz${sound.path}`;
-
+      let soundLink = `http://localhost:5000${sound.path}`;
+      if (!(baseUrl.includes("localhost"))) {
+        soundLink = `http://ucfgroup4.xyz${sound.path}`;
+      }
+      console.log('Playing sound from:', soundLink);
       const audio = new Audio(soundLink);
       audio.play().catch(e => console.error("Error playing sound:", e));
     }
