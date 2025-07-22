@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decode/jwt_decode.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   static const _baseUrl = 'http://ucfgroup4.xyz';
@@ -16,25 +17,28 @@ class AuthService {
     );
 
     final dynamic data = jsonDecode(resp.body);
-
-    // Make sure it’s a JSON object
     if (data is! Map) {
       throw Exception('Unexpected response structure: $data');
     }
-
     if (resp.statusCode != 200) {
       throw Exception(data['error'] ?? 'HTTP ${resp.statusCode}');
     }
 
-    // The server calls it accessToken
     final token = data['accessToken'] as String?;
-    if (token == null) throw Exception('login succeeded but no accessToken field');
+    if (token == null) throw Exception('login succeeded but no accessToken');
 
-    // ---- Decode claims ----
-    final claims = Jwt.parseJwt(token);
+    // Decode the JWT to extract claims
+    final claims    = Jwt.parseJwt(token);
     final id        = claims['UserID'] as int?;
     final firstName = claims['firstName'] as String?;
     final lastName  = claims['lastName'] as String?;
+
+    // ─── Persist token + userId ───
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('jwtToken', token);
+    if (id != null) {
+      await prefs.setInt('userId', id);
+    }
 
     return {
       'jwtToken' : token,
@@ -57,15 +61,26 @@ class AuthService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'firstName': firstName,
-        'lastName': lastName,
-        'login': login,
-        'password': password,
-        'email': email,
+        'lastName' : lastName,
+        'login'    : login,
+        'password' : password,
+        'email'    : email,
       }),
     );
     final data = jsonDecode(resp.body);
     if (resp.statusCode != 201) {
       throw Exception(data['error'] ?? 'Registration failed (${resp.statusCode})');
+    }
+
+    // if the server returns token + id right away, cache them:
+    final prefs = await SharedPreferences.getInstance();
+    final token = data['accessToken'] ?? data['jwtToken'];
+    if (token != null && token.toString().isNotEmpty) {
+      await prefs.setString('jwtToken', token);
+    }
+    final uid = data['UserID'] ?? data['userId'];
+    if (uid != null) {
+      await prefs.setInt('userId', uid is int ? uid : int.parse(uid.toString()));
     }
   }
 }
