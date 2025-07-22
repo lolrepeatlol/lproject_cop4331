@@ -145,7 +145,7 @@ const Discover = () => {
       const baseUrl = window.location.origin;
       const soundLink = baseUrl.includes("localhost")
         ? `http://localhost:5000${sound.path}`
-        : `http://ucfgroup4.xyz${sound.path}`;
+        : `httpit://ucfgroup4.xyz${sound.path}`;
 
       const audio = new Audio(soundLink);
       audio.play().catch(e => console.error("Error playing sound:", e));
