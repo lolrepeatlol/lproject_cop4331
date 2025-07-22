@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './SoundUI.module.css';
 import { buildPath } from '../Path';
 import { retrieveToken, storeToken } from '../tokenStorage';
@@ -20,10 +20,17 @@ function SoundUI() {
   const [searchResults, setSearchResults] = useState<Sound[]>([]);
   const [gridSounds, setGridSounds] = useState<(Sound | null)[]>(Array(8).fill(null));
   const [isGridLoaded, setIsGridLoaded] = useState(false);
+  useEffect(() => {
+    document.body.style.backgroundImage = 'none';
+    document.body.style.backgroundColor = '#1C1C1EB3';
+    return () => {
+      document.body.style.backgroundImage = '';
+      document.body.style.backgroundColor = '';
+    };
+  }, []);
 
-  // --- State for the new upload feature ---
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadMessage, setUploadMessage] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getUserID = (): string | null => {
     const userData = localStorage.getItem('user_data');
@@ -35,31 +42,24 @@ function SoundUI() {
     return user.id;
   };
 
-  // --- New function to handle file upload ---
-  const handleUpload = async () => {
+  const handleUpload = async (fileToUpload: File) => {
     const UserID = getUserID();
     if (!UserID) {
       setUploadMessage('You must be logged in to upload a file.');
       return;
     }
-    if (!selectedFile) {
-      setUploadMessage('Please select a file to upload first.');
-      return;
-    }
 
-    // FormData is required for file uploads
     const formData = new FormData();
-    formData.append('soundFile', selectedFile); // This key 'soundFile' must match the server's multer config
+    formData.append('soundFile', fileToUpload);
     formData.append('UserID', UserID);
     formData.append('jwtToken', retrieveToken() || '');
 
-    setUploadMessage('Uploading...');
+    setUploadMessage(`Uploading "${fileToUpload.name}"...`);
 
     try {
       const response = await fetch(buildPath('api/uploadSound'), {
         method: 'POST',
         body: formData,
-        // DO NOT set 'Content-Type' header, the browser does it automatically for FormData
       });
 
       const res = await response.json();
@@ -67,6 +67,11 @@ function SoundUI() {
         setUploadMessage(`Error: ${res.error || 'Upload failed'}`);
       } else {
         setUploadMessage(`Success! "${res.newSound.soundName}" was uploaded.`);
+        
+        setTimeout(() => {
+          setUploadMessage('');
+        }, 3000);
+        
         if (res.jwtToken) {
           storeToken(res.jwtToken);
         }
@@ -76,11 +81,17 @@ function SoundUI() {
     }
   };
 
-  // --- Function to handle file selection ---
+  const handleUploadButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setSelectedFile(event.target.files[0]);
-      setUploadMessage('');
+    const file = event.target.files?.[0];
+    if (file) {
+      handleUpload(file);
+    }
+    if (event.target) {
+      event.target.value = '';
     }
   };
 
@@ -115,6 +126,7 @@ function SoundUI() {
     }
   };
 
+  // --- Function to save the grid layout ---
   const saveGridLayout = async (currentGridSounds: (Sound | null)[]) => {
     const UserID = getUserID();
     if (!UserID) return;
@@ -146,7 +158,7 @@ function SoundUI() {
     }
   };
 
-  // Function to search for sounds
+  // --- Function to search for sounds ---
   const searchSounds = async () => {
     const UserID = getUserID();
     if (!UserID) return;
@@ -177,20 +189,19 @@ function SoundUI() {
       setMessage(error.toString());
     }
   };
+  -
+    useEffect(() => {
+      const loadAndSave = async () => {
+        if (!isGridLoaded) {
+          await fetchGridLayout();
+          setIsGridLoaded(true);
+        } else {
+          await saveGridLayout(gridSounds);
+        }
+      };
 
-  useEffect(() => {
-    const loadAndSave = async () => {
-      if (!isGridLoaded) {
-        await fetchGridLayout();
-        setIsGridLoaded(true);
-      } else {
-        await saveGridLayout(gridSounds);
-      }
-    };
-
-    loadAndSave();
-  }, [gridSounds, isGridLoaded]);
-
+      loadAndSave();
+    }, [gridSounds, isGridLoaded]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -199,11 +210,12 @@ function SoundUI() {
       } else {
         setSearchResults([]);
       }
-    });
+    }, 150);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchValue]);
 
+  // --- Modal and Grid interaction functions ---
   const openModal = (item: number) => {
     setSelectedGridItem(item);
     setIsModalOpen(true);
@@ -221,15 +233,12 @@ function SoundUI() {
       const newGridSounds = [...gridSounds];
       newGridSounds[selectedGridItem - 1] = sound;
       setGridSounds(newGridSounds);
-
-      console.log(`Sound "${sound.soundName}" added to grid item ${selectedGridItem}`);
       closeModal();
     }
   };
 
   const handleClearSound = (e: React.MouseEvent, index: number) => {
     e.stopPropagation();
-
     const newGridSounds = [...gridSounds];
     newGridSounds[index] = null;
     setGridSounds(newGridSounds);
@@ -240,40 +249,34 @@ function SoundUI() {
       const baseUrl = window.location.origin;
       let soundLink = `http://localhost:5000${sound.path}`;
       if (!(baseUrl.includes("localhost"))) {
-        soundLink = `http://ucfgroup4.xyz${sound.path}`;
+        soundLink = `https://ucfgroup4.xyz${sound.path}`;
       }
       console.log('Playing sound from:', soundLink);
       const audio = new Audio(soundLink);
       audio.play().catch(e => console.error("Error playing sound:", e));
     }
   };
-
   return (
     <div className={styles.soundUiDiv}>
-
-      {/* --- New Uploader UI --- */}
-      <div className={styles.uploadContainer}>
-        <label htmlFor="soundUploader">Upload New Sound</label>
-        <div className={styles.uploadControls}>
-          <input
-            id="soundUploader"
-            type="file"
-            accept="audio/*"
-            onChange={handleFileChange}
-            className={styles.fileInput}
-          />
-          <button onClick={handleUpload} className={styles.uploadButton} disabled={!selectedFile}>
-            Upload
-          </button>
-        </div>
+      <div className={styles.headerContainer}>
+        <h1>Your sounds</h1>
+        <button className={styles.UploadButton} onClick={handleUploadButtonClick}>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4.66699 6L8.00033 2.66667L11.3337 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M8 2.66667V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span>Upload new...</span>
+        </button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+          accept="audio/*"
+        />
         {uploadMessage && <p className={styles.uploadMessage}>{uploadMessage}</p>}
       </div>
-      {/* --- End of Uploader UI --- */}
-
-      <hr className={styles.divider} />
-
-      <label htmlFor="Sound">Your Soundboard</label>
-
       <div className={styles.gridContainer}>
         {gridSounds.map((sound, index) => (
           <div
@@ -286,19 +289,30 @@ function SoundUI() {
                 <button
                   className={styles.playButton}
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent modal from opening on play
+                    e.stopPropagation();
                     handlePlaySound(sound);
                   }}
                 >
-                  ▶
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 3l14 9-14 9V3z"></path>
+                  </svg>
                 </button>
                 <span className={styles.soundName}>{sound.soundName}</span>
                 <button
                   className={styles.clearButton}
                   onClick={(e) => handleClearSound(e, index)}
                 >
-                  &times; {/* This is an "x" symbol */}
+                  &times;
                 </button>
+
               </div>
             ) : (
               "+"
@@ -306,7 +320,6 @@ function SoundUI() {
           </div>
         ))}
       </div>
-
       {isModalOpen && (
         <div className={styles.modalOverlay} onClick={closeModal}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>

@@ -1,15 +1,13 @@
-
-import LoggedInName from '../components/LoggedInName';
+import NavigationBar from '../components/NavigationBar';
 import SoundUI from '../components/SoundUI';
 
-const SoundPage = () =>
-{
-    return(
-        <div>
-            <LoggedInName />
-            <SoundUI />
-        </div>
-    );
+function SoundPage() {
+  return (
+    <>
+      <NavigationBar />
+      <SoundUI />
+    </>
+  );
 }
 
 export default SoundPage;

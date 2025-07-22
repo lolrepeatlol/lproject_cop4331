@@ -119,8 +119,8 @@ html::before {
 .modalContent input[type="password"]:focus,
 .modalContent input[type="email"]:focus {
   outline: none;
-  border-color: #A020F0;
-  box-shadow: 0 0 0 3px rgba(160, 32, 240, 0.3);
+  border-color: #b13478;
+  box-shadow: 0 0 0 3px rgba(177, 52, 120, 0.3);
 }
 
 /* --- Button Styles --- */
@@ -129,7 +129,7 @@ html::before {
   font-size: 1rem;
   font-weight: 500;
   color: #ffffff;
-  background-color: #8A2BE2;
+  background-color: #b13478;
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -138,7 +138,7 @@ html::before {
 }
 
 .primaryButton:hover {
-  background-color: #7B24CB;
+  background-color: #9d2d6a;
 }
 
 .extraActions {

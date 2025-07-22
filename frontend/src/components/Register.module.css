@@ -7,7 +7,6 @@ body {
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden;
 }
 
 .registerPage {
@@ -20,6 +19,7 @@ body {
     box-sizing: border-box;
     height: 100%;
     width: 100%;
+    transform: scale(0.9);
 }
 
 .title {
@@ -38,8 +38,9 @@ body {
     backdrop-filter: blur(15px);
     border-radius: 20px;
     border: 1px solid rgba(28, 28, 30, 0.85);
-    width: 150%;
-    max-width: 700px;
+    width: 100%;
+    min-width: 700px;
+    max-width: 800px;
     max-height: 90vh;
     text-align: center;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
@@ -96,8 +97,8 @@ body {
 .registerContainer input[type='password']:focus,
 .registerContainer input[type='email']:focus {
     outline: none;
-    border-color: #a020f0;
-    box-shadow: 0 0 0 3px rgba(160, 32, 240, 0.3);
+    border-color: #b13478;
+    box-shadow: 0 0 0 3px rgba(177, 52, 120, 0.3);
 }
 
 /* --- Button Styles --- */
@@ -106,7 +107,7 @@ body {
     font-size: 1rem;
     font-weight: 500;
     color: #ffffff;
-    background-color: #8a2be2;
+    background-color: #b13478;
     border: none;
     border-radius: 10px;
     cursor: pointer;
@@ -115,7 +116,7 @@ body {
 }
 
 .primaryButton:hover {
-    background-color: #7b24cb;
+    background-color: #9d2d6a;
 }
 
 .extraActions {
@@ -149,10 +150,29 @@ body {
 }
 
 /* --- Responsive Media Query --- */
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 1300px) {
+
+    html,
+    body {
+        overflow-y: auto;
+        height: auto;
+    }
+
+    .registerPage {
+        height: auto;
+        min-height: 100vh;
+        justify-content: flex-start;
+        transform: scale(0.9);
+        padding: 2rem 1rem;
+        min-width: 200px;
+    }
+
     .registerContainer {
         width: 100%;
         padding: 1.5rem 1rem;
+        max-height: none;
+        min-width: 0;
+        max-width: 100%;
     }
 
     .prompt {

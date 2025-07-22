@@ -1,0 +1,31 @@
+/* Container for the user info and logout button */
+.loggedInContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+}
+
+/* Styling for the "Welcome {userName}" text */
+.userName {
+  font-size: 1rem;
+  color: #a7a7a7;
+  white-space: nowrap;
+}
+
+/* Styling for the logout button */
+.logoutButton {
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #b13478; 
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover effect for the logout button */
+.logoutButton:hover {
+  background-color: #9d2d6a; 
+}
