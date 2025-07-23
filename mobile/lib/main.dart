@@ -98,8 +98,6 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-/* ───────────────────────── Home with bottom‑nav ───────────────────────── */
-
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
@@ -118,6 +116,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _tab = 1; // Library default
+  late final Future<List<String?>> _sessionFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _sessionFuture = Future.wait([Session.uid(), Session.token()]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -134,13 +139,36 @@ class _HomePageState extends State<HomePage> {
       ),
       tabBuilder: (_, index) {
         switch (index) {
-          case 0:  return const DiscoverScreen();
-          case 1:  return LibraryScreen(
-            onLogout: widget.onLogout,
-            firstName: widget.firstName,
-            lastName:  widget.lastName,
-          );
-          default: return const AboutScreen();
+          case 0:
+            return const DiscoverScreen();
+          case 1:
+            return FutureBuilder<List<String?>>(
+              future: _sessionFuture,          // ← SAME future every build
+              builder: (ctx, snap) {
+                if (snap.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CupertinoActivityIndicator());
+                }
+                if (snap.hasError || snap.data == null) {
+                  return Center(
+                    child: Text(
+                      'Error loading session',
+                      style: const TextStyle(color: CupertinoColors.systemRed),
+                    ),
+                  );
+                }
+                final userId   = snap.data![0]!;
+                final jwtToken = snap.data![1]!;
+                return LibraryScreen(
+                  onLogout : widget.onLogout,
+                  firstName: widget.firstName,
+                  lastName : widget.lastName,
+                  userId    : userId,
+                  jwtToken  : jwtToken,
+                );
+              },
+            );
+          default:
+            return const AboutScreen();
         }
       },
     );

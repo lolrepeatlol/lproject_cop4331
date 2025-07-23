@@ -6,6 +6,8 @@ import 'services/sound_api.dart';
 import 'models/sound.dart';
 import 'extras/cupertino_toast.dart';
 import 'package:flutter/material.dart' show CircularProgressIndicator, AlwaysStoppedAnimation;
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({
@@ -13,11 +15,15 @@ class LibraryScreen extends StatefulWidget {
     required this.onLogout,
     required this.firstName,
     required this.lastName,
+    required this.userId,
+    required this.jwtToken,
   });
 
   final VoidCallback onLogout;
   final String firstName;
   final String lastName;
+  final String userId;
+  final String jwtToken;
 
   @override
   State<LibraryScreen> createState() => _LibraryScreenState();
@@ -41,11 +47,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
   final ValueNotifier<List<Sound>> _searchNotifier = ValueNotifier([]);
 
   static const _baseUrl = 'http://ucfgroup4.xyz';
+  late final OverlayEntry _fabEntry;
 
   @override
   void initState() {
     super.initState();
     _loadGrid();
+    _fabEntry = OverlayEntry(builder: _buildFab);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Overlay.of(context, rootOverlay: true).insert(_fabEntry);
+    });
     _gridSub = SoundApi.onGridChanged.listen((_) => _loadGrid());
     _player.onDurationChanged.listen((d) => setState(() => _duration = d));
     _player.onPositionChanged.listen((p) => setState(() => _position = p));
@@ -57,6 +68,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   @override
   void dispose() {
+    _fabEntry.remove();
     _gridSub.cancel();
     _searchNotifier.dispose();
     _searchCtl.dispose();
@@ -165,6 +177,89 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
   }
 
+  Future<void> _pickAndUpload() async {
+    // 1. Pick the file
+    final res = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['wav', 'mp3', 'ogg', 'm4a'],
+    );
+    if (!mounted || res == null || res.files.isEmpty) return;
+    final file = File(res.files.single.path!);
+
+    // 2. Show uploading toast
+    showCupertinoToast(context, 'Uploading…');
+
+    Sound newSound;
+    try {
+      newSound = await SoundApi.uploadSound(
+        audioFile: file,
+        userId:    widget.userId,
+        jwtToken:  widget.jwtToken,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      showCupertinoToast(context, '${e.toString()}');
+      return;
+    }
+
+    if (!mounted) return;
+
+    // Add to grid
+    try {
+      await SoundApi.addSoundToFirstEmptySlot(newSound);
+    } catch (e) {
+      // e.g. no empty slot left
+      showCupertinoToast(context, 'Uploaded, but couldn’t add to library: ${e.toString()}');
+      return;
+    }
+
+    // ─── THEN refresh & notify ───
+    _loadGrid();
+    showCupertinoToast(
+      context,
+      'Uploaded “${newSound.name}” and added to your library!',
+    );
+  }
+
+  Widget _buildFab(BuildContext context) {
+    final bottom = MediaQuery.of(context).viewPadding.bottom;
+    return Positioned(
+      right : 32,
+      bottom: bottom + 50 + 32, // tabBarHeight + margin
+      child: CupertinoButton(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        onPressed: _pickAndUpload,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF943872),
+            borderRadius: BorderRadius.circular(32),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              PhosphorIcon(
+                PhosphorIcons.uploadSimple(),
+                size: 24,
+                color: CupertinoColors.white,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Upload',
+                style: TextStyle(
+                  color: CupertinoColors.white,
+                  fontSize: 18,
+                  fontFamily: 'PlusJakartaSans',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _listItem(int i) {
     final s = _grid[i];
@@ -306,7 +401,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   bottom: 0,
                   child: CupertinoButton(
                     padding: EdgeInsets.zero,
-                    minSize: 0,
+                    minimumSize: Size.zero,
                     onPressed: () => Navigator.pop(context),
                     child: const Icon(
                       CupertinoIcons.xmark_circle_fill,
