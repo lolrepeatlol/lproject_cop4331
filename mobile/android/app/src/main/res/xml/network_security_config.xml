@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- allow plain-text for this host (and sub-domains) -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">ucfgroup4.xyz</domain>
+    </domain-config>
+</network-security-config>
