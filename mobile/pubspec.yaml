@@ -65,7 +65,7 @@ flutter:
   uses-material-design: true
 
   assets:
-  # no need to add anything here right now
+    - assets/banner.jpg
 
   fonts:
     - family: PlusJakartaSans

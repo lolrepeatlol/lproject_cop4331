@@ -1,52 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:jwt_decode/jwt_decode.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:http/http.dart' as http;
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'services/sound_api.dart';
+import 'models/sound.dart';
 
-/// ────────────────────────────── Sound model ──────────────────────────────
-class Sound {
-  const Sound({
-    required this.id,
-    required this.name,
-    required this.path,
-    required this.isDefault,
-    this.userId,
-  });
-
-  final String id;
-  final String name;
-  final String path;
-  final bool isDefault;
-  final String? userId;
-
-  factory Sound.fromJson(Map<String, dynamic> j) {
-    final raw = j['isDefault'];
-    final isDefault = (raw is bool)
-        ? raw
-        : (raw?.toString().toLowerCase() == 'true');
-    return Sound(
-      id: j['_id'] as String,
-      name: j['soundName'] as String,
-      path: j['path'] as String,
-      isDefault: isDefault,
-      userId: j['UserID']?.toString(),
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-    '_id': id,
-    'soundName': name,
-    'path': path,
-    'isDefault': isDefault,
-    'UserID': userId,
-  };
-}
-
-/// ─────────────────────────── LibraryScreen widget ──────────────────────────
+// LibraryScreen widget
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({
     super.key,
@@ -68,6 +27,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   final List<Sound?> _grid = List.filled(8, null);
   bool _loadingGrid = true;
   String? _message;
+  late final StreamSubscription<void> _gridSub;
 
   final _searchCtl = TextEditingController();
   int? _slot;
@@ -76,20 +36,26 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   final ValueNotifier<List<Sound>> _searchNotifier = ValueNotifier([]);
 
-  // ──────────── CONFIG ────────────
+  // CONFIG
   static const _baseUrl = 'http://ucfgroup4.xyz';
   static const _purple = Color(0xFF943872);
   static const _tileColor = Color(0xFF27272D);
 
-  // ──────────── Lifecycle ────────────
+  // Lifecycle
   @override
   void initState() {
     super.initState();
-    _fetchGrid();
+    _loadGrid();
+
+    // Listen for refresh events:
+    _gridSub = SoundApi.onGridChanged.listen((_) {
+      _loadGrid();
+    });
   }
 
   @override
   void dispose() {
+    _gridSub.cancel();
     _searchNotifier.dispose();
     _searchCtl.dispose();
     _player.dispose();
@@ -97,49 +63,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     super.dispose();
   }
 
-  // ─────────── Shared-prefs helpers ───────────
-
-  Future<String?> _uid() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // Try the cached value first
-    final cached = prefs.getInt('userId');
-    if (cached != null) return cached.toString();
-
-    // Fallback: decode the JWT we already have
-    final jwt = prefs.getString('jwtToken');
-    if (jwt == null || jwt.isEmpty) return null;
-
-    try {
-      final claims = Jwt.parseJwt(jwt);
-
-      // back-end might use any of these keys:
-      final raw = claims['UserID'] ?? claims['userId'];
-      if (raw == null) return null;
-
-      final int id = raw is int ? raw : int.parse(raw.toString());
-
-      // cache it so we never do this again
-      await prefs.setInt('userId', id);
-      return id.toString();
-    } catch (_) {
-      return null;
-    }
-  }
-
-  Future<String> _token() async {
-    final p = await SharedPreferences.getInstance();
-    return p.getString('jwtToken') ?? '';
-  }
-
-  Future<void> _maybeSaveToken(dynamic json) async {
-    if (json is Map && json['jwtToken'] is String && json['jwtToken'].toString().isNotEmpty) {
-      final p = await SharedPreferences.getInstance();
-      await p.setString('jwtToken', json['jwtToken']);
-    }
-  }
-
-  // ─────────── UI error helper ───────────
+  // UI error helper
   void _setApiError(String err) {
     setState(() => _message = err);
     showCupertinoDialog(
@@ -157,28 +81,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
-  // ─────────── API calls ───────────
-  Future<void> _fetchGrid() async {
-    final uid = await _uid();
-    if (uid == null) return;
-
+  // API calls
+  Future<void> _loadGrid() async {
     try {
-      final resp = await http.post(
-        Uri.parse('$_baseUrl/api/getGridLayout'),
-        headers: const {'Content-Type': 'application/json'},
-        body: jsonEncode({'UserID': uid, 'jwtToken': await _token()}),
-      );
-      final data = jsonDecode(resp.body);
-
-      if (resp.statusCode != 200 || data['error'] != null) {
-        _setApiError(data['error']?.toString() ?? 'HTTP ${resp.statusCode}');
-      } else {
-        final layout = (data['layout'] as List?) ?? [];
-        for (var i = 0; i < 8; i++) {
-          _grid[i] = (i < layout.length && layout[i] != null) ? Sound.fromJson(layout[i]) : null;
-        }
-        await _maybeSaveToken(data);
-      }
+      final grid = await SoundApi.fetchGrid();
+      setState(() => _grid.setAll(0, grid));
     } catch (e) {
       _setApiError(e.toString());
     } finally {
@@ -186,66 +93,24 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
   }
 
-  Future<void> _saveGrid() async {
-    final uid = await _uid();
-    if (uid == null) return;
-
-    try {
-      final resp = await http.post(
-        Uri.parse('$_baseUrl/api/saveGridLayout'),
-        headers: const {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'UserID': uid,
-          'jwtToken': await _token(),
-          'layout': _grid.map((e) => e?.toJson()).toList(),
-        }),
-      );
-      await _maybeSaveToken(jsonDecode(resp.body));
-    } catch (_) {}
-  }
+  Future<void> _saveGrid() => SoundApi.saveGrid(_grid);
 
   Future<void> _search(String q) async {
+    // clear results but don’t return a value
     if (q.isEmpty) {
-      _searchNotifier.value = [];    // ← clear results
+      _searchNotifier.value = [];
       return;
     }
-    final uid = await _uid();
-    if (uid == null) {
-      return;
-    }
-
-    final token = await _token();
-    final body = {'UserID': uid, 'search': q, 'jwtToken': token};
 
     try {
-      final resp = await http.post(
-        Uri.parse('$_baseUrl/api/searchSounds'),
-        headers: const {'Content-Type': 'application/json'},
-        body: jsonEncode(body),
-      );
-
-      final data = jsonDecode(resp.body);
-
-      await _maybeSaveToken(data);
-
-      // Parse error for debug
-      final errorMsg = (data['error'] as String?) ?? '';
-
-      if (resp.statusCode == 200) {
-        final list = (data['results'] as List?) ?? [];
-        final sounds = list.map((e) => Sound.fromJson(e)).toList();
-        _searchNotifier.value = sounds;  // Update notifier with results
-      } else {
-        _setApiError(errorMsg.isNotEmpty ? errorMsg : 'HTTP ${resp.statusCode}');
-        _searchNotifier.value = [];
-      }
+      _searchNotifier.value = await SoundApi.search(q);
     } catch (e) {
       _setApiError(e.toString());
       _searchNotifier.value = [];
     }
   }
 
-  // ─────────── Actions ───────────
+  // Actions
   void _open(int slot) {
     _slot = slot;
     _searchCtl.clear();
@@ -254,13 +119,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   void _assign(Sound s) {
     final slot = _slot;
-    if (slot == null) return;               // guard
+    if (slot == null) return;
     setState(() {
       _grid[slot] = s;
-      _slot = null;                          // clear it
+      _slot = null;
     });
-    _saveGrid();
+    SoundApi.saveGrid(_grid);
   }
+
 
   void _clear(int slot) {
     setState(() => _grid[slot] = null);
@@ -279,7 +145,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
   }
 
-  // ─────────── UI helpers ───────────
+  // UI helpers
   Widget _tile(int i) {
     final s = _grid[i];
     return GestureDetector(
@@ -407,7 +273,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
 
-  // ─────────── build ───────────
+  // build
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
