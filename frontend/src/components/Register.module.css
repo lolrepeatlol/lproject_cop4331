@@ -42,6 +42,7 @@ body {
     text-align: center;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     box-sizing: border-box;
+    transform: translateY(-9vh) scale(0.8);
 }
 
 .prompt {
@@ -152,9 +153,10 @@ body {
 
 
 @media only screen and (max-width: 1300px) {
-    body{
-        overflow-y:scroll;
+    body {
+        overflow-y: scroll;
     }
+
     .registerPage {
         justify-content: center;
         padding: 1rem;
@@ -162,7 +164,7 @@ body {
 
     .registerContainer {
         width: 100%;
-        max-width: 500px;
+        max-width: 800px;
         max-height: 85vh;
         overflow-y: auto;
     }

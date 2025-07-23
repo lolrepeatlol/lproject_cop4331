@@ -305,6 +305,9 @@ body {
   .soundUiDiv {
     overflow-y: scroll;
   }
+  .headerContainer h1{
+    margin-top: 40%;
+  }
 }
 
 @media only screen and (max-width: 500px) {
