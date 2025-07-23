@@ -27,6 +27,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   final List<Sound?> _grid = List.filled(8, null);
   bool _loadingGrid = true;
   String? _message;
+  late final StreamSubscription<void> _gridSub;
 
   final _searchCtl = TextEditingController();
   int? _slot;
@@ -45,10 +46,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
   void initState() {
     super.initState();
     _loadGrid();
+
+    // Listen for refresh events:
+    _gridSub = SoundApi.onGridChanged.listen((_) {
+      _loadGrid();
+    });
   }
 
   @override
   void dispose() {
+    _gridSub.cancel();
     _searchNotifier.dispose();
     _searchCtl.dispose();
     _player.dispose();
