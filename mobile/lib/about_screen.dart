@@ -13,37 +13,65 @@ class AboutScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 24),
               Center(
                 child: Text(
                   'Boardy',
-                  style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle,
+                  textAlign: TextAlign.center,
+                  style: CupertinoTheme.of(context)
+                      .textTheme
+                      .navLargeTitleTextStyle
+                      .copyWith(fontSize: 42),
                 ),
               ),
               const SizedBox(height: 12),
               Center(
                 child: Text(
                   'v1.0.0',
-                  style: TextStyle(
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
                     color: CupertinoColors.systemGrey,
-                    fontSize: 18,
+                    fontSize: 20,
                   ),
                 ),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Boardy is a customizable soundboard app. '
-                    'Assign your favorite sounds, organize your library, and discover new audio!',
-                style: TextStyle(fontSize: 16),
+              Center(
+                child: Text(
+                  'Your personal soundboard app.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: Text(
+                  '- Assign your favorite sounds\n'
+                      '- Organize your library\n'
+                      '- Discover new audio',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18),
+                ),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Developed by UCF Group 4',
-                style: TextStyle(
-                  fontSize: 15,
-                  color: CupertinoColors.systemGrey2,
+              Center(
+                child: Text(
+                  'Developed by:\n'
+                      'Alexei Solonari\n'
+                      'Jose Ojeda\n'
+                      'Paul Bagaric\n'
+                      'Li Fitzgerald\n'
+                      'Jordan Khan',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: CupertinoColors.systemGrey2,
+                  ),
                 ),
               ),
             ],

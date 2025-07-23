@@ -275,6 +275,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ],
               CupertinoButton(
                 color: const Color(0xFF943872),
+                borderRadius: BorderRadius.circular(999),
                 onPressed: _loading ? null : _submit,
                 child: _loading
                     ? const CupertinoActivityIndicator()
@@ -286,7 +287,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       .textStyle
                       .copyWith(
                     color: CupertinoColors.white,
-                    fontWeight: FontWeight.bold,
                     fontFamily: 'PlusJakartaSans',
                     fontSize: 18,
                   ),

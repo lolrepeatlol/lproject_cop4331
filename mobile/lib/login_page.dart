@@ -85,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
                   color: CupertinoColors.white,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
               const SizedBox(height: 20),
@@ -118,17 +118,20 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 32),
               CupertinoButton(
                 color: const Color(0xFF943872),
+                borderRadius: BorderRadius.circular(999),      // ← here’s the pill shape
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24, vertical: 16,                // smaller padding = smaller height
+                ),
                 onPressed: _loading ? null : _submit,
                 child: _loading
                     ? const CupertinoActivityIndicator()
                     : Text(
-                  'Login',
+                  'Log in',
                   style: CupertinoTheme.of(context)
                       .textTheme
                       .textStyle
                       .copyWith(
                     color: CupertinoColors.white,
-                    fontWeight: FontWeight.bold,
                     fontFamily: 'PlusJakartaSans',
                     fontSize: 20,
                   ),
