@@ -3,23 +3,22 @@
 /* --- Base Page Styles --- */
 html,
 body {
-    overflow: hidden;
-    height: 100%;
+    min-height: 100vh;
+    height: auto;
     margin: 0;
     padding: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .registerPage {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    text-align: center;
+    justify-content: center;
+    min-height: 100vh;
     padding: 2rem 1rem;
     box-sizing: border-box;
-    height: 100%;
     width: 100%;
-    transform: scale(0.9);
 }
 
 .title {
@@ -39,9 +38,7 @@ body {
     border-radius: 20px;
     border: 1px solid rgba(28, 28, 30, 0.85);
     width: 100%;
-    min-width: 700px;
     max-width: 800px;
-    max-height: 90vh;
     text-align: center;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     box-sizing: border-box;
@@ -56,7 +53,7 @@ body {
 
 .subtitle {
     color: #a0a0a0;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 /* --- Form & Input Styles --- */
@@ -141,38 +138,37 @@ body {
 
 /* --- Messages and Results --- */
 .registerResult {
+    min-height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
     color: #ff6b6b;
     font-weight: bold;
     font-size: 1rem;
-    margin-top: -0.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
     text-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
 }
 
-/* --- Responsive Media Query --- */
+
 @media only screen and (max-width: 1300px) {
-
-    html,
-    body {
-        overflow-y: auto;
-        height: auto;
+    body{
+        overflow-y:scroll;
     }
-
     .registerPage {
-        height: auto;
-        min-height: 100vh;
-        justify-content: flex-start;
-        transform: scale(0.9);
-        padding: 2rem 1rem;
-        min-width: 200px;
+        justify-content: center;
+        padding: 1rem;
     }
 
     .registerContainer {
         width: 100%;
-        padding: 1.5rem 1rem;
-        max-height: none;
-        min-width: 0;
-        max-width: 100%;
+        max-width: 500px;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    .registerContainer {
+        padding: 1.5rem;
     }
 
     .prompt {
@@ -181,22 +177,5 @@ body {
 
     .subtitle {
         font-size: 0.9rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .registerContainer input[type='text'],
-    .registerContainer input[type='password'],
-    .registerContainer input[type='email'] {
-        padding: 12px 14px;
-        font-size: 0.9rem;
-    }
-
-    .primaryButton {
-        padding: 12px 18px;
-        font-size: 0.9rem;
-    }
-
-    .linkButton {
-        font-size: 0.875rem;
     }
 }
