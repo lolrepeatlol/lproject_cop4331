@@ -8,6 +8,7 @@ import 'extras/cupertino_toast.dart';
 import 'package:flutter/material.dart' show CircularProgressIndicator, AlwaysStoppedAnimation;
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:jwt_decode/jwt_decode.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({
@@ -40,35 +41,30 @@ class _LibraryScreenState extends State<LibraryScreen> {
   Timer? _debounce;
   final _player = AudioPlayer();
 
-  Sound?   _nowPlaying;
+  Sound? _nowPlaying;
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
 
   final ValueNotifier<List<Sound>> _searchNotifier = ValueNotifier([]);
 
   static const _baseUrl = 'http://ucfgroup4.xyz';
-  late final OverlayEntry _fabEntry;
 
   @override
   void initState() {
     super.initState();
     _loadGrid();
-    _fabEntry = OverlayEntry(builder: _buildFab);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Overlay.of(context, rootOverlay: true).insert(_fabEntry);
-    });
     _gridSub = SoundApi.onGridChanged.listen((_) => _loadGrid());
     _player.onDurationChanged.listen((d) => setState(() => _duration = d));
     _player.onPositionChanged.listen((p) => setState(() => _position = p));
-    _player.onPlayerComplete.listen((_) => setState(() {
-      _nowPlaying = null;
-      _duration = _position = Duration.zero;
-    }));
+    _player.onPlayerComplete.listen((_) =>
+        setState(() {
+          _nowPlaying = null;
+          _duration = _position = Duration.zero;
+        }));
   }
 
   @override
   void dispose() {
-    _fabEntry.remove();
     _gridSub.cancel();
     _searchNotifier.dispose();
     _searchCtl.dispose();
@@ -86,16 +82,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
     setState(() => _message = err);
     showCupertinoDialog(
       context: context,
-      builder: (_) => CupertinoAlertDialog(
-        title: const Text('Server error'),
-        content: Text(err),
-        actions: [
-          CupertinoDialogAction(
-            child: const Text('OK'),
-            onPressed: () => Navigator.pop(context),
-          )
-        ],
-      ),
+      builder: (_) =>
+          CupertinoAlertDialog(
+            title: const Text('Server error'),
+            content: Text(err),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text('OK'),
+                onPressed: () => Navigator.pop(context),
+              )
+            ],
+          ),
     );
   }
 
@@ -154,8 +151,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
       await _player.stop();
       setState(() {
         _nowPlaying = null;
-        _duration   = Duration.zero;
-        _position   = Duration.zero;
+        _duration = Duration.zero;
+        _position = Duration.zero;
       });
       return;
     }
@@ -166,11 +163,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
       await _player.play(UrlSource(audioUri));
 
       // grab the track length immediately
-      final d = await _player.getDuration();   // may be null for a live/stream
+      final d = await _player.getDuration(); // may be null for a live/stream
       setState(() {
         _nowPlaying = s;
-        _duration   = d ?? Duration.zero; // default to zero if unknown
-        _position   = Duration.zero;
+        _duration = d ?? Duration.zero; // default to zero if unknown
+        _position = Duration.zero;
       });
     } catch (e) {
       _setApiError('Audio playback failed: $e');
@@ -193,8 +190,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
     try {
       newSound = await SoundApi.uploadSound(
         audioFile: file,
-        userId:    widget.userId,
-        jwtToken:  widget.jwtToken,
+        userId: widget.userId,
+        jwtToken: widget.jwtToken,
       );
     } catch (e) {
       if (!mounted) return;
@@ -209,7 +206,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
       await SoundApi.addSoundToFirstEmptySlot(newSound);
     } catch (e) {
       // e.g. no empty slot left
-      showCupertinoToast(context, 'Uploaded, but couldn’t add to library: ${e.toString()}');
+      showCupertinoToast(
+          context, 'Uploaded, but couldn’t add to library: ${e.toString()}');
       return;
     }
 
@@ -221,160 +219,124 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
-  Widget _buildFab(BuildContext context) {
-    final bottom = MediaQuery.of(context).viewPadding.bottom;
-    return Positioned(
-      right : 32,
-      bottom: bottom + 50 + 32, // tabBarHeight + margin
-      child: CupertinoButton(
-        padding: EdgeInsets.zero,
-        minimumSize: Size.zero,
-        onPressed: _pickAndUpload,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF943872),
-            borderRadius: BorderRadius.circular(32),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              PhosphorIcon(
-                PhosphorIcons.uploadSimple(),
-                size: 24,
-                color: CupertinoColors.white,
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Upload',
-                style: TextStyle(
-                  color: CupertinoColors.white,
-                  fontSize: 18,
-                  fontFamily: 'PlusJakartaSans',
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _listItem(int i) {
     final s = _grid[i];
     final even = i % 2 == 0;
-    final bgColor  = even ? const Color(0xFF27272D) : const Color(0xFF1C1C22);
-    final playBase = even ? const Color(0xFF3E3E47) : const Color(0xFF34343E);  // define playBase
+    final bgColor = even ? const Color(0xFF27272D) : const Color(0xFF1C1C22);
+    final playBase = even ? const Color(0xFF3E3E47) : const Color(
+        0xFF34343E); // define playBase
 
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      child: s != null
-          ? Dismissible(
-        key: ValueKey('filled-$i'),
-        direction: DismissDirection.endToStart,
-        resizeDuration: null,
-        onDismissed: (_) => _clear(i),
-        background: Container(
-          color: CupertinoColors.systemRed,
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20),
-          child: const Text(
-            'Remove',
-            style: TextStyle(color: CupertinoColors.white, fontSize: 16),
-          ),
-        ),
-        child: _LibraryCard(
-          key: ValueKey('card-$i'),
-          sound: s,
-          isPlaying: _nowPlaying == s,
-          progress: _progressFor(s),
-          onPlay: () => _togglePlay(s),
-          cardColor: bgColor,
-          playBaseColor: playBase,
-        ),
-      )
-      : Container(
-        key: ValueKey('empty-$i'),
-        height: 90,
-        width: double.infinity,
-        color: bgColor,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            // extra indent
-            const SizedBox(width: 16),
-
-            // icon @ 70% opacity
-            Opacity(
-              opacity: 0.7,
-              child: PhosphorIcon(
-                PhosphorIcons.empty(),
-                size: 28,
-                color: CupertinoColors.white,
-              ),
+        duration: const Duration(milliseconds: 300),
+        child: s != null
+            ? Dismissible(
+          key: ValueKey('filled-$i'),
+          direction: DismissDirection.endToStart,
+          resizeDuration: null,
+          onDismissed: (_) => _clear(i),
+          background: Container(
+            color: CupertinoColors.systemRed,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 20),
+            child: const Text(
+              'Remove',
+              style: TextStyle(color: CupertinoColors.white, fontSize: 16),
             ),
-            const SizedBox(width: 14),
+          ),
+          child: _LibraryCard(
+            key: ValueKey('card-$i'),
+            sound: s,
+            isPlaying: _nowPlaying == s,
+            progress: _progressFor(s),
+            onPlay: () => _togglePlay(s),
+            cardColor: bgColor,
+            playBaseColor: playBase,
+          ),
+        )
+            : Container(
+          key: ValueKey('empty-$i'),
+          height: 90,
+          width: double.infinity,
+          color: bgColor,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              // extra indent
+              const SizedBox(width: 16),
 
-            // Free space text, light italic, 70% opacity
-            const Opacity(
-              opacity: 0.7,
-              child: Text(
-                'Free space',
-                style: TextStyle(
+              // icon @ 70% opacity
+              Opacity(
+                opacity: 0.7,
+                child: PhosphorIcon(
+                  PhosphorIcons.empty(),
+                  size: 28,
                   color: CupertinoColors.white,
-                  fontSize: 24,
-                  fontFamily: 'PlusJakartaSans',
-                  fontWeight: FontWeight.w400,
-                  fontStyle: FontStyle.italic,
                 ),
               ),
-            ),
+              const SizedBox(width: 14),
 
-            // keep right alignment for the Add button
-            const Spacer(),
-
-            // Add button with extra right padding
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Opacity(
+              // Free space text, light italic, 70% opacity
+              const Opacity(
                 opacity: 0.7,
-                child: CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  onPressed: () => _open(i),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: playBase.withAlpha(179), // 70% opacity
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: const Text(
-                      'Add',
-                      style: TextStyle(
-                        color: CupertinoColors.white,
-                        fontSize: 18,
-                        fontFamily: 'PlusJakartaSans',
-                        fontWeight: FontWeight.w500,
+                child: Text(
+                  'Free space',
+                  style: TextStyle(
+                    color: CupertinoColors.white,
+                    fontSize: 24,
+                    fontFamily: 'PlusJakartaSans',
+                    fontWeight: FontWeight.w400,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+
+              // keep right alignment for the Add button
+              const Spacer(),
+
+              // Add button with extra right padding
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Opacity(
+                  opacity: 0.7,
+                  child: CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    onPressed: () => _open(i),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: playBase.withAlpha(179), // 70% opacity
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: const Text(
+                        'Add',
+                        style: TextStyle(
+                          color: CupertinoColors.white,
+                          fontSize: 18,
+                          fontFamily: 'PlusJakartaSans',
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      )
+            ],
+          ),
+        )
     );
   }
 
   Widget _modal() {
     return CupertinoPopupSurface(
       child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.7,
+        height: MediaQuery
+            .of(context)
+            .size
+            .height * 0.7,
         child: Column(
           children: [
             // Stack header: title centered, close button top-right, same Y
@@ -426,7 +388,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
                 onChanged: (v) {
                   _debounce?.cancel();
-                  _debounce = Timer(const Duration(milliseconds: 400), () => _search(v));
+                  _debounce = Timer(
+                      const Duration(milliseconds: 400), () => _search(v));
                 },
               ),
             ),
@@ -449,14 +412,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   return ListView.separated(
                     padding: EdgeInsets.zero,
                     itemCount: results.length,
-                    separatorBuilder: (_, __) => Container(
-                      height: 1,
-                      color: CupertinoColors.systemGrey.withOpacity(0.3),
-                    ),
+                    separatorBuilder: (_, __) =>
+                        Container(
+                          height: 1,
+                          color: CupertinoColors.systemGrey.withOpacity(0.3),
+                        ),
                     itemBuilder: (_, idx) {
                       final s = results[idx];
                       return CupertinoButton(
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 10,
+                            horizontal: 16),
                         onPressed: () {
                           Navigator.pop(context);
                           _assign(s);
@@ -484,50 +449,158 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
+  Widget _buildFooter() {
+    // decode name from JWT
+    final claims    = Jwt.parseJwt(widget.jwtToken);
+    final firstName = (claims['firstName'] as String?) ?? '';
+    final lastName  = (claims['lastName']  as String?) ?? '';
+    final displayName = (firstName.isNotEmpty || lastName.isNotEmpty)
+        ? '$firstName $lastName'
+        : 'User #${widget.userId}';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Column(
+        children: [
+          Text(
+            'Logged in as $displayName',
+            style: const TextStyle(
+              color: CupertinoColors.systemGrey,
+              fontSize: 14,
+              fontFamily: 'PlusJakartaSans',
+            ),
+          ),
+          const SizedBox(height: 8),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: widget.onLogout,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3A3A3C),     // darker gray
+                borderRadius: BorderRadius.circular(32),
+              ),
+              child: const Text(
+                'Log out',
+                style: TextStyle(
+                  color: CupertinoColors.white,
+                  fontSize: 16,
+                  fontFamily: 'PlusJakartaSans',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 200), // extra padding for scrolling
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewPadding.bottom; // home‐indicator area
+
     return CupertinoPageScaffold(
       child: SafeArea(
         bottom: false,
-        child: _loadingGrid
-            ? const Center(child: CupertinoActivityIndicator())
-            : ListView.builder(
-          // push everything down from the status bar
-          padding: const EdgeInsets.only(top: 80),
-          itemCount: 1 + 8 + (_message != null ? 1 : 0),
-          itemBuilder: (context, idx) {
-            // ----- 0: the header -----
-            if (idx == 0) {
-              return Padding(
-                padding: const EdgeInsets.only(top: 24, bottom: 40),
-                child: Text(
-                  'Your sounds',
-                  textAlign: TextAlign.center,
-                  style: CupertinoTheme.of(context)
-                      .textTheme
-                      .textStyle
-                      .copyWith(fontSize: 32, fontWeight: FontWeight.bold),
-                ),
-              );
-            }
+        child: Stack(
+          children: [
+            // ── main content: spinner or list ──
+            if (_loadingGrid)
+              const Center(child: CupertinoActivityIndicator())
+            else
+              ListView.builder(
+                padding: const EdgeInsets.only(top: 80),
+                // +1 header, +8 slots, +optional message, +1 footer
+                itemCount: 1 + 8 + (_message != null ? 1 : 0) + 1,
+                itemBuilder: (context, idx) {
+                  if (idx == 0) {
+                    // header
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 24, bottom: 40),
+                      child: Text(
+                        'Your sounds',
+                        textAlign: TextAlign.center,
+                        style: CupertinoTheme.of(context)
+                            .textTheme
+                            .textStyle
+                            .copyWith(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  }
 
-            // ----- after the 8 slots, maybe show message -----
-            final msgIndex = 1 + 8;
-            if (_message != null && idx == msgIndex) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Text(
-                  _message!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: CupertinoColors.systemRed),
-                ),
-              );
-            }
+                  // slots 1–8
+                  if (idx >= 1 && idx <= 8) {
+                    return _listItem(idx - 1);
+                  }
 
-            // ----- otherwise one of the 8 slots -----
-            final slot = idx - 1;
-            return _listItem(slot);
-          },
+                  // optional error/message
+                  final msgIndex = 1 + 8;
+                  if (_message != null && idx == msgIndex) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text(
+                        _message!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: CupertinoColors.systemRed),
+                      ),
+                    );
+                  }
+
+                  // footer (logout, padding)
+                  final footerIndex = 1 + 8 + (_message != null ? 1 : 0);
+                  if (idx == footerIndex) {
+                    return _buildFooter();
+                  }
+
+                  return const SizedBox.shrink();
+                },
+              ),
+
+            // ── FAB scoped to Library tab only ──
+            Positioned(
+              right: 32,
+              bottom: bottomInset + 50 + 32, // tabBarHeight (50) + margin (32)
+              child: CupertinoButton(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                onPressed: _pickAndUpload,
+                child: Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF943872),
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      PhosphorIcon(
+                        PhosphorIcons.uploadSimple(),
+                        size: 24,
+                        color: CupertinoColors.white,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Upload',
+                        style: TextStyle(
+                          color: CupertinoColors.white,
+                          fontSize: 18,
+                          fontFamily: 'PlusJakartaSans',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
