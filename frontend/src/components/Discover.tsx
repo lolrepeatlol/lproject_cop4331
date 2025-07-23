@@ -201,7 +201,11 @@ const Discover = () => {
             onChange={(e) => setSearchValue(e.target.value)}
           />
         </div>
-        {message && <p className={styles.message}>{message}</p>}
+        <div className={styles.messageContainer}>
+          <p className={`${styles.message} ${!message ? styles.hidden : ''}`}>
+            {message || '\u00A0'}
+          </p>
+        </div>
       </div>
 
       <div className={styles.soundSections}>

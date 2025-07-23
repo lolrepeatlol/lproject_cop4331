@@ -212,7 +212,7 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
               onChange={handleSetPassword}
             />
           </div>
-          {message && <span className={styles.loginResult}>{message}</span>}
+          <span className={styles.loginResult}>{message}</span>
           <button type="submit" className={styles.primaryButton}>
             Log In
           </button>

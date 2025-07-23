@@ -30,18 +30,14 @@ html::before {
 .loginPage {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 2rem 1rem;
+  align-items: center; 
+  min-height: 100vh;
+  padding: 5rem 6rem;
   box-sizing: border-box;
-  height: 100%;
   width: 100%;
 }
-
 .title {
   font-size: clamp(2.5rem, 10vw, 5.625rem);
-  /* min, preferred, max (90px) */
   text-align: center;
   color: #ffffff;
   text-shadow: 8px 8px 12px #000000;
@@ -50,21 +46,21 @@ html::before {
 }
 
 .loginContainer {
-    position: relative;
-    padding: clamp(1.5rem, 5vw, 3rem);
-    background-color: rgba(28, 28, 30, 0.85);
-    backdrop-filter: blur(15px);
-    border-radius: 20px;
-    border: 1px solid rgba(28, 28, 30, 0.85);
-    width: 160%;
-    max-width: 700px;
-    text-align: center;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    box-sizing: border-box;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  background-color: rgba(28, 28, 30, 0.85);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  border: 1px solid rgba(28, 28, 30, 0.85);
+  width: 100%;
+  max-width: 650px;
+  text-align: center;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-sizing: border-box;
+  margin-top:2%;
 }
 
 .prompt {
-  font-size: clamp(1.8rem, 6vw, 3rem);
+  font-size: clamp(1.5rem, 6vw, 2.5rem);
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 0.2rem;
@@ -73,6 +69,7 @@ html::before {
 .subtitle {
   color: #a0a0a0;
   margin-bottom: 2rem;
+  font-size: clamp(0.9rem, 2vw, 1rem);
 }
 
 /* --- Form & Input Styles --- */
@@ -95,12 +92,7 @@ html::before {
   color: #c0c0c0;
 }
 
-.loginContainer input[type="text"],
-.loginContainer input[type="password"],
-.loginContainer input[type="email"],
-.modalContent input[type="text"],
-.modalContent input[type="password"],
-.modalContent input[type="email"] {
+:is(.loginContainer, .modalContent) input:is([type="text"], [type="password"], [type="email"]) {
   width: 100%;
   padding: 14px 16px;
   border: 1px solid #444;
@@ -112,12 +104,7 @@ html::before {
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.loginContainer input[type="text"]:focus,
-.loginContainer input[type="password"]:focus,
-.loginContainer input[type="email"]:focus,
-.modalContent input[type="text"]:focus,
-.modalContent input[type="password"]:focus,
-.modalContent input[type="email"]:focus {
+:is(.loginContainer, .modalContent) input:is([type="text"], [type="password"], [type="email"]):focus {
   outline: none;
   border-color: #b13478;
   box-shadow: 0 0 0 3px rgba(177, 52, 120, 0.3);
@@ -163,10 +150,14 @@ html::before {
 
 /* --- Messages and Results --- */
 .loginResult {
+  min-height: 1.5rem; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
   color: #FF6B6B;
   font-weight: bold;
   font-size: 1rem;
-  margin-top: -0.5rem;
   margin-bottom: 0.5rem;
   text-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
 }
@@ -194,7 +185,7 @@ html::before {
   padding: 2rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  width: 100%;
+  width: 90%;
   max-width: 400px;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
   color: white;
@@ -250,18 +241,18 @@ html::before {
   text-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
 }
 
-@media only screen and (max-width: 600px) {
-  .loginContainer {
-    position: relative;
-    padding: clamp(1.5rem, 5vw, 3rem);
-    background-color: rgba(28, 28, 30, 0.85);
-    backdrop-filter: blur(15px);
-    border-radius: 20px;
-    border: 1px solid rgba(28, 28, 30, 0.85);
-    width: 100%;
-    max-width: 700px;
-    text-align: center;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    box-sizing: border-box;
+/* --- Responsive Adjustments --- */
+@media (max-width: 1300px) {
+  .loginPage {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  .title {
+    margin-bottom: 2rem;
+  }
+  .loginContainer{
+    overflow-y: scroll;
+    margin-top: 0;
   }
 }

@@ -189,7 +189,7 @@ function Register() {
             />
           </div>
 
-          {message && <span className={styles.registerResult}>{message}</span>}
+          <span className={styles.registerResult}>{message}</span>
 
           <button type="submit" className={styles.primaryButton}>
             Sign Up

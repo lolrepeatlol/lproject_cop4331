@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700&display=swap');
 /* General Body and Component Styles */
 body {
   color: #E0E0E0;
@@ -42,7 +43,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: #b13478; 
+  background-color: #b13478;
   color: #ffffff;
   border: none;
   border-radius: 50px;
@@ -54,7 +55,7 @@ body {
 }
 
 .UploadButton:hover {
-  background-color: #9d2d6a; 
+  background-color: #9d2d6a;
 }
 
 .uploadMessage {
@@ -93,7 +94,7 @@ body {
 .gridItem:hover {
   background-color: #333333;
   transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(177, 52, 120, 0.7); 
+  box-shadow: 0 0 20px rgba(177, 52, 120, 0.7);
   z-index: 10;
 }
 
@@ -213,8 +214,8 @@ body {
 
 .searchBar:focus {
   outline: none;
-  border-color: #b13478; 
-  box-shadow: 0 0 0 3px rgba(177, 52, 120, 0.3); 
+  border-color: #b13478;
+  box-shadow: 0 0 0 3px rgba(177, 52, 120, 0.3);
 }
 
 /* --- Search Results Styling --- */
@@ -287,5 +288,34 @@ body {
 
 .closeButton:hover {
   color: white;
-  background-color: #9d2d6a; 
+  background-color: #9d2d6a;
+}
+
+@media only screen and (max-width: 1500px) {
+  .gridContainer {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0px;
+    padding: 10px;
+    width: 100%;
+    max-width: 800px;
+    border-radius: 10%;
+  }
+
+  .soundUiDiv {
+    overflow-y: scroll;
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  .gridContainer {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+    padding: 10px;
+    width: 100%;
+    max-width: 700px;
+    border-radius: 10%;
+    overflow-y: scroll;
+  }
 }

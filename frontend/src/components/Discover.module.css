@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700&display=swap');
+
 .discoverContainer {
   display: flex;
   flex-direction: column;
@@ -119,7 +121,6 @@
   color: #ffffff;
   font-size: 0.9rem;
   flex-grow: 1;
-  font-family: sans-serif;
 }
 
 .addButton {
@@ -138,9 +139,24 @@
   box-shadow: 0 0 10px rgba(177, 52, 120, 0.3);
   margin-top: auto;
   margin-bottom: auto;
+  line-height: 1;
+  padding: 0;
 }
 
 .addButton:hover {
   transform: scale(1.1);
   box-shadow: 0 0 16px rgba(177, 52, 120, 0.5);
+}
+
+.messageContainer {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message {
+  color: white;
+  font-size: 1.3rem;
+  margin: 0;
 }
