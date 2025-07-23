@@ -60,6 +60,7 @@ class _MyAppState extends State<MyApp> {
       title: 'Boardy',
       theme: CupertinoThemeData(
         brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF0C0C0E),
         textTheme: CupertinoTextThemeData(
           textStyle: const TextStyle(
             fontFamily: 'PlusJakartaSans',
