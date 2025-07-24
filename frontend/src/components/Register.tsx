@@ -131,11 +131,11 @@ function Register() {
     <div className={styles.registerPage}>
       <h1 className={styles.title}>Boardy</h1>
       <div className={styles.registerContainer}>
-        <h1 className={styles.prompt}>Create Account</h1>
+        <h1 className={styles.prompt}>Create account</h1>
         <p className={styles.subtitle}>Join us! It only takes a minute.</p>
         <form onSubmit={doRegister} className={styles.registerForm}>
           <div className={styles.inputGroup}>
-            <label htmlFor="firstName">First Name</label>
+            <label htmlFor="firstName">First name</label>
             <input
               type="text"
               id="firstName"
@@ -146,7 +146,7 @@ function Register() {
           </div>
 
           <div className={styles.inputGroup}>
-            <label htmlFor="lastName">Last Name</label>
+            <label htmlFor="lastName">Last name</label>
             <input
               type="text"
               id="lastName"
@@ -192,12 +192,12 @@ function Register() {
           <span className={styles.registerResult}>{message}</span>
 
           <button type="submit" className={styles.primaryButton}>
-            Sign Up
+            Sign up
           </button>
         </form>
         <div className={styles.extraActions}>
           <button onClick={gotoLogin} className={styles.linkButton}>
-            Already have an account? Log In
+            Already have an account? Log in
           </button>
         </div>
       </div>

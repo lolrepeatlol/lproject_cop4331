@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import styles from './Discover.module.css';
 import { buildPath } from '../Path';
 import { retrieveToken, storeToken } from '../tokenStorage';
+import { PlayIcon, StopIcon, PlusIcon, ProhibitIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
 
 interface Sound {
   _id: string;
@@ -12,8 +13,8 @@ interface Sound {
 }
 
 const hardcodedCategories = [
-  { title: 'Sounds of Nostalgia', soundNames: ['PS3 Startup', 'Windows XP Shutdown', 'Wii Start', 'Roblox Oof'] },
-  { title: 'Celebration', soundNames: ['Confetti', 'Yippee', 'Firework', 'Crowd Cheer'] },
+  { title: 'Sounds of nostalgia', soundNames: ['PS3 Startup', 'Windows XP Shutdown', 'Wii Start', 'Roblox Oof'] },
+  { title: 'Celebratory vibes', soundNames: ['Confetti', 'Yippee', 'Firework', 'Crowd Cheer'] },
   { title: 'Sports', soundNames: ['NFL Fox', 'Wii Sports', 'UCF Chant', 'MLB Fox'] },
 ];
 
@@ -26,20 +27,58 @@ const shuffleArray = (array: Sound[]) => {
   return newArray;
 };
 
+const PlayButton = ({
+                      isPlaying = false,
+                      progress = 0,
+                      onClick,
+                      isRecommended = false,
+                    }: {
+  isPlaying?: boolean;
+  progress?: number;
+  onClick: () => void;
+  isRecommended?: boolean;
+}) => {
+  const SIZE     = 50;
+  const STROKE   = 4;
+  const RADIUS   = (SIZE - STROKE) / 2;
+  const CIRC     = 2 * Math.PI * RADIUS;
+  const offset   = CIRC * (1 - progress);
 
-const IconPlay = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M5 3l14 9-14 9V3z"></path>
-  </svg>
-);
+  return (
+      <button
+          className={`${styles.playButton} ${isPlaying ? styles.playing : ''} ${isRecommended ? styles.recommendedPlayButton : ''}`}
+          onClick={onClick}
+          aria-label={isPlaying ? 'Stop' : 'Play'}
+          type="button"
+      >
+        {isPlaying && (
+            <svg
+                className={styles.ring}
+                viewBox={`0 0 ${SIZE} ${SIZE}`}
+                style={{
+                  width: `${SIZE}px`,
+                  height: `${SIZE}px`
+                }}
+            >
+              <circle
+                  cx={SIZE / 2}
+                  cy={SIZE / 2}
+                  r={RADIUS}
+                  fill="none"
+                  stroke="#FFF"
+                  strokeWidth={STROKE}
+                  strokeDasharray={CIRC}
+                  strokeDashoffset={offset}
+
+                  transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
+              />
+            </svg>
+        )}
+
+        {isPlaying ? <StopIcon size={20} /> : <PlayIcon size={20} />}
+      </button>
+  );
+};
 
 const Discover = () => {
   const [searchValue, setSearchValue] = useState('');
@@ -47,16 +86,17 @@ const Discover = () => {
   const [soundCategories, setSoundCategories] = useState<Record<string, Sound[]>>({});
   const [gridSounds, setGridSounds] = useState<(Sound | null)[]>([]);
   const [message, setMessage] = useState('');
+  const [nowPlaying, setNowPlaying]   = useState<string | null>(null);
+  const [progress,   setProgress]     = useState<number>(0);
+  const [audio,      setAudio]        = useState<HTMLAudioElement | null>(null);
 
   const getUserID = (): string | null => {
     const userData = localStorage.getItem('user_data');
-    if (!userData) {
-      return null;
-    }
+    if (!userData) return null;
     return JSON.parse(userData).id;
   };
 
-  const fetchGridLayout = async () => {
+  const fetchGridLayout = useCallback(async () => {
     const UserID = getUserID();
     if (!UserID) return;
 
@@ -73,10 +113,10 @@ const Discover = () => {
         setGridSounds(res.layout || Array(8).fill(null));
         if (res.jwtToken) storeToken(res.jwtToken);
       }
-    } catch (error: any) {
-      setMessage(error.toString());
+    } catch (err: unknown) {
+      setMessage(err instanceof Error ? err.message : String(err));
     }
-  };
+  }, []);
 
   const saveGridLayout = async (newGrid: (Sound | null)[]) => {
     const UserID = getUserID();
@@ -94,12 +134,12 @@ const Discover = () => {
       } else {
         if (res.jwtToken) storeToken(res.jwtToken);
       }
-    } catch (error: any) {
-      setMessage(error.toString());
+    } catch (err: unknown) {
+      setMessage(err instanceof Error ? err.message : String(err));
     }
   };
 
-  const searchSounds = async (query: string) => {
+  const searchSounds = useCallback(async (query: string) => {
     const UserID = getUserID();
     if (!UserID) {
       setMessage('Please log in to search for sounds.');
@@ -118,14 +158,15 @@ const Discover = () => {
         setSearchResults([]);
       } else {
         const allSounds: Sound[] = res.results || [];
+        const defaultSounds = allSounds.filter(s => s.isDefault !== false);
         setSearchResults(allSounds);
 
         if (query === '') {
           const newCategories: Record<string, Sound[]> = {};
-          const shuffled = shuffleArray(allSounds);
-          newCategories['Popular Sounds'] = shuffled.slice(0, 6);
+          const shuffled = shuffleArray(defaultSounds);
+          newCategories['Recommended sounds'] = shuffled.slice(0, 6);
           hardcodedCategories.forEach(category => {
-            newCategories[category.title] = allSounds.filter(sound =>
+            newCategories[category.title] = defaultSounds.filter(sound =>
               category.soundNames.includes(sound.soundName)
             );
           });
@@ -135,22 +176,50 @@ const Discover = () => {
 
         if (res.jwtToken) storeToken(res.jwtToken);
       }
-    } catch (error: any) {
-      setMessage(error.toString());
+    } catch (err: unknown) {
+      setMessage(err instanceof Error ? err.message : String(err));
     }
-  };
+  }, []);
 
-  const handlePlaySound = (sound: Sound | null) => {
-    if (sound && sound.path) {
-      const baseUrl = window.location.origin;
-      let soundLink = `http://localhost:5000${sound.path}`;
-      if (!(baseUrl.includes("localhost"))) {
-        soundLink = `http://ucfgroup4.xyz${sound.path}`;
-      }
-      console.log('Playing sound from:', soundLink);
-      const audio = new Audio(soundLink);
-      audio.play().catch(e => console.error("Error playing sound:", e));
+  /** play / stop toggle for a given sound */
+  const togglePlay = (sound: Sound) => {
+    // stop the same sound (or another one) if something is already playing
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
     }
+
+    // clicking the currently playing card = stop
+    if (nowPlaying === sound._id) {
+      setNowPlaying(null);
+      setProgress(0);
+      setAudio(null);
+      return;
+    }
+
+    // start new audio
+    const baseUrl   = window.location.origin.includes('localhost')
+        ? 'http://localhost:5000'
+        : 'http://ucfgroup4.xyz';
+
+    const a         = new Audio(`${baseUrl}${sound.path}`);
+
+    const onTime  = () =>
+        setProgress(a.duration ? a.currentTime / a.duration : 0);
+
+    const onEnded = () => {
+      setNowPlaying(null);
+      setProgress(0);
+      setAudio(null);
+    };
+
+    a.addEventListener('timeupdate', onTime);
+    a.addEventListener('ended',      onEnded);
+
+    a.play().catch(e => console.error('Audio play error:', e));
+
+    setNowPlaying(sound._id);
+    setAudio(a);
   };
 
   const handleAddSound = async (soundToAdd: Sound) => {
@@ -170,85 +239,135 @@ const Discover = () => {
 
   useEffect(() => {
     document.body.style.backgroundColor = '#1C1C1EB3';
-    fetchGridLayout();
-    searchSounds('');
+    void fetchGridLayout();
+    void searchSounds('');
 
     return () => {
       document.body.style.backgroundColor = '';
     };
-  }, []);
+  }, [fetchGridLayout, searchSounds]);
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (searchValue) {
-        searchSounds(searchValue);
-      }
-    }, 250);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchValue]);
+    if (searchValue.trim() === '') return;
+    const id = setTimeout(() => searchSounds(searchValue), 250);
+    return () => clearTimeout(id);
+  }, [searchValue, searchSounds]);
 
   return (
-    <div className={styles.discoverContainer}>
-      <div className={styles.heroContent}>
-        <h1 className={styles.heroTitle}>Find your next sound</h1>
-        <div className={styles.searchBar}>
-          <input
-            type="text"
-            placeholder="Search for sounds..."
-            className={styles.searchInput}
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-          />
+      <div className={styles.discoverContainer}>
+        <div className={styles.bannerSection}>
+          <div className={styles.heroContent}>
+            <h1 className={styles.heroTitle}>Find your next sound</h1>
+            <div className={styles.searchBar}>
+              <div className={styles.searchInputContainer}>
+                <MagnifyingGlassIcon size={20} className={styles.searchIcon} />
+                <input
+                    type="text"
+                    placeholder="Search"
+                    className={styles.searchInput}
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className={styles.messageContainer}>
+              <p className={`${styles.message} ${!message ? styles.hidden : ''}`}>
+                {message || '\u00A0'}
+              </p>
+            </div>
+          </div>
         </div>
-        <div className={styles.messageContainer}>
-          <p className={`${styles.message} ${!message ? styles.hidden : ''}`}>
-            {message || '\u00A0'}
-          </p>
-        </div>
-      </div>
 
       <div className={styles.soundSections}>
         {searchValue ? (
-          <div className={styles.soundCategory}>
-            <h2 className={styles.categoryTitle}>Search Results</h2>
-            <div className={styles.soundList}>
-              {searchResults.length > 0 ? (
-                searchResults.map((sound) => (
-                  <div key={sound._id} className={styles.soundCard}>
-                    <button className={styles.playButton} onClick={() => handlePlaySound(sound)}>
-                      <IconPlay />
-                    </button>
-                    <span className={styles.soundName}>{sound.soundName}</span>
-                    <button className={styles.addButton} onClick={() => handleAddSound(sound)}>+</button>
-                  </div>
-                ))
-              ) : (
-                <p className={styles.noResults}>No results found.</p>
-              )}
-            </div>
-          </div>
-        ) : (
-          Object.entries(soundCategories).map(([title, sounds]) => (
-            <div key={title} className={styles.soundCategory}>
-              <h2 className={styles.categoryTitle}>{title}</h2>
-              <div className={styles.soundList}>
-                {sounds.length > 0 ? (
-                  sounds.map((sound) => (
-                    <div key={sound._id} className={styles.soundCard}>
-                      <button className={styles.playButton} onClick={() => handlePlaySound(sound)}>
-                        <IconPlay />
-                      </button>
-                      <span className={styles.soundName}>{sound.soundName}</span>
-                      <button className={styles.addButton} onClick={() => handleAddSound(sound)}>+</button>
-                    </div>
-                  ))
+            <div className={styles.soundCategory}>
+              <h2 className={styles.categoryTitle}>Search results</h2>
+              <div className={styles.searchGrid}>
+                {searchResults.length > 0 ? (
+                    searchResults.map((sound) => (
+                        <div key={sound._id} className={styles.soundCard}>
+                          <PlayButton
+                              isPlaying={nowPlaying === sound._id}
+                              progress={nowPlaying === sound._id ? progress : 0}
+                              onClick={() => togglePlay(sound)}
+                          />
+                          <span className={styles.soundName}>{sound.soundName}</span>
+                          {(() => {
+                            const canAdd = gridSounds.some((s) => s === null);
+                            return (
+                                <button
+                                    className={`${styles.addButton} ${
+                                        canAdd ? '' : styles.full
+                                    }`}
+                                    onClick={() =>
+                                        canAdd
+                                            ? handleAddSound(sound)
+                                            : setMessage('Your sound grid is full')
+                                    }
+                                    aria-label="Add sound"
+                                    type="button"
+                                >
+                                  {canAdd ? (
+                                      <PlusIcon size={22} weight="regular" />
+                                  ) : (
+                                      <ProhibitIcon size={22} weight="regular" />
+                                  )}
+                                </button>
+                            );
+                          })()}
+                        </div>
+                    ))
                 ) : (
-                  <p className={styles.noResults}>Loading sounds...</p>
+                    <p className={styles.noResults}>No results found.</p>
                 )}
               </div>
             </div>
-          ))
+        ) : (
+            Object.entries(soundCategories).map(([title, sounds]) => (
+                <div key={title} className={styles.soundCategory}>
+                  <h2 className={styles.categoryTitle}>{title}</h2>
+                  <div className={styles.soundList}>
+                    {sounds.length > 0 ? (
+                        sounds.map((sound) => (
+                            <div key={sound._id} className={`${styles.soundCard} ${title === 'Recommended sounds' ? styles.recommendedCard : ''}`}>
+                              <PlayButton
+                                  isPlaying={nowPlaying === sound._id}
+                                  progress={nowPlaying === sound._id ? progress : 0}
+                                  onClick={() => togglePlay(sound)}
+                                  isRecommended={title === 'Recommended sounds'}
+                              />
+                              <span className={styles.soundName}>{sound.soundName}</span>
+                              {(() => {
+                                const canAdd = gridSounds.some((s) => s === null);
+                                return (
+                                    <button
+                                        className={`${styles.addButton} ${
+                                            canAdd ? '' : styles.full
+                                        } ${title === 'Recommended sounds' ? styles.recommendedAddButton : ''}`}
+                                        onClick={() =>
+                                            canAdd
+                                                ? handleAddSound(sound)
+                                                : setMessage('Your sound grid is full')
+                                        }
+                                        aria-label="Add sound"
+                                        type="button"
+                                    >
+                                      {canAdd ? (
+                                          <PlusIcon size={22} weight="regular" />
+                                      ) : (
+                                          <ProhibitIcon size={22} weight="regular" />
+                                      )}
+                                    </button>
+                                );
+                              })()}
+                            </div>
+                        ))
+                    ) : (
+                        <p className={styles.noResults}>Loading sounds...</p>
+                    )}
+                  </div>
+                </div>
+            ))
         )}
       </div>
     </div>

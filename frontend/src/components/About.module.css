@@ -1,0 +1,43 @@
+/* --- Layout & palette (unchanged) --- */
+.aboutContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #1C1C1E;
+    color: #eee;
+    align-items: center;
+
+    /* NEW –- guard the content from screen edges / folds */
+    padding-inline: max(4vw, env(safe-area-inset-left, 0px));
+    box-sizing: border-box;
+}
+
+.aboutMain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    /* keep the nice centred column on desktop, but let it breathe on mobile */
+    width: 100%;
+    max-width: 420px;
+
+    /* top spacing grows with viewport height but caps out */
+    padding-top: clamp(64px, 14vh, 150px);
+    padding-bottom: 40px;
+}
+
+/* --- Typography --- */
+.appTitle   { font-size: clamp(32px, 8vw, 42px); font-weight: 700; margin-bottom: 12px; text-align: center; }
+.version    { font-size: clamp(16px, 5vw, 20px); color: #999; margin-bottom: 32px; text-align: center; }
+.appDescription { font-size: clamp(18px, 6vw, 22px); font-weight: 700; text-align: center; margin-bottom: 20px; }
+.features   { list-style: none; padding: 0; font-size: clamp(16px, 5vw, 18px); text-align: center; margin-bottom: 32px; color: #ddd; }
+.features li{ margin: 4px 0; }
+
+.credits    { font-size: clamp(14px, 4.5vw, 16px); color: #888; text-align: center; line-height: 1.4; }
+.credits span{ display: block; margin-bottom: 6px; font-weight: 500; }
+
+/* --- Safety nets for very small/folded screens --- */
+.aboutContainer * {
+    /* prevent long names / words from spilling horizontally */
+    overflow-wrap: anywhere;
+}

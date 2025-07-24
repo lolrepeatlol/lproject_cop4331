@@ -8,6 +8,7 @@ import CardPage from './pages/CardPage';
 import RegisterPage from './pages/RegisterPage';
 import SoundPage from './pages/SoundPage';
 import DiscoverPage from './pages/DiscoverPage';
+import AboutPage from "./pages/AboutPage.tsx";
 function App() {
   return (
     <Router >
@@ -17,6 +18,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/sound" element={<SoundPage />} />
         <Route path="/discover" element={<DiscoverPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

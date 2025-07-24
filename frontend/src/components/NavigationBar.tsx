@@ -2,80 +2,59 @@ import React, { useState } from 'react';
 import styles from './NavigationBar.module.css';
 import LoggedInName from './LoggedInName';
 import { useLocation } from 'react-router-dom';
-
-const DiscoverIcon: React.FC = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12H15M3 6H21M3 18H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-);
-const LibraryIcon: React.FC = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 18V12M8 18V15M12 18V9M16 18V12M20 18V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-);
-const AboutIcon: React.FC = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M12 16V12M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-);
-
-const HamburgerIcon: React.FC = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const CloseIcon: React.FC = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
+import { ListMagnifyingGlassIcon, WaveformIcon, InfoIcon, XIcon, ListIcon } from '@phosphor-icons/react';
 
 const NavigationBar: React.FC = () => {
-  const location = useLocation();
-  const currentPath = location.pathname;
+    const location = useLocation();
+    const currentPath = location.pathname;
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const closeMenu = () => setIsMenuOpen(false);
+    const closeMenu = () => setIsMenuOpen(false);
 
-  const navLinks = (
-    <>
-      <a href="/discover" className={`${styles.navItem} ${currentPath === '/discover' ? styles.active : ''}`} onClick={closeMenu}>
-        <DiscoverIcon />
-        <span>Discover</span>
-      </a>
-      <a href="/sound" className={`${styles.navItem} ${currentPath === '/sound' ? styles.active : ''}`} onClick={closeMenu}>
-        <LibraryIcon />
-        <span>Library</span>
-      </a>
-      <a href="https://github.com/lolrepeatlol/lproject_cop4331" className={styles.navItem} target="_blank" rel="noopener noreferrer" onClick={closeMenu}>
-        <AboutIcon />
-        <span>About</span>
-      </a>
-    </>
-  );
+    const navLinks = (
+        <>
+            <a href="/discover" className={`${styles.navItem} ${currentPath === '/discover' ? styles.active : ''}`} onClick={closeMenu}>
+                <ListMagnifyingGlassIcon size={24} />
+                <span>Discover</span>
+            </a>
+            <a href="/sound" className={`${styles.navItem} ${currentPath === '/sound' ? styles.active : ''}`} onClick={closeMenu}>
+                <WaveformIcon size={24} />
+                <span>Library</span>
+            </a>
+            <a href="/about" className={`${styles.navItem} ${currentPath === '/about' ? styles.active : ''}`} onClick={closeMenu}>
+                <InfoIcon size={24} />
+                <span>About</span>
+            </a>
+        </>
+    );
 
-  return (
-    <>
-      <nav className={styles.navbar}>
-        <div className={styles.navContent}>
-          <div className={styles.navLeft}>
-            <a className={styles.brand}>Boardy</a>
-          </div>
-          <div className={styles.navCenter}>
-            {navLinks}
-          </div>
-          <div className={styles.navRight}>
-            <LoggedInName />
-          </div>
-          <button className={styles.hamburger} onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <CloseIcon /> : <HamburgerIcon />}
-          </button>
-        </div>
-      </nav>
-      <div className={`${styles.mobileNavMenu} ${isMenuOpen ? styles.open : ''}`}>
-        {navLinks}
-        <div className={styles.loggedInContainer}>
-          <LoggedInName />
-        </div>
-      </div>
-    </>
-  );
+    return (
+        <>
+            <nav className={styles.navbar}>
+                <div className={styles.navContent}>
+                    <div className={styles.navLeft}>
+                        <a className={styles.brand}>Boardy</a>
+                    </div>
+                    <div className={styles.navCenter}>
+                        {navLinks}
+                    </div>
+                    <div className={styles.navRight}>
+                        <LoggedInName />
+                    </div>
+                    <button className={styles.hamburger} onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                        {isMenuOpen ? <XIcon size={24} /> : <ListIcon size={24} />}
+                    </button>
+                </div>
+            </nav>
+            <div className={`${styles.mobileNavMenu} ${isMenuOpen ? styles.open : ''}`}>
+                {navLinks}
+                <div className={styles.loggedInContainer}>
+                    <LoggedInName />
+                </div>
+            </div>
+        </>
+    );
 };
 
 export default NavigationBar;
