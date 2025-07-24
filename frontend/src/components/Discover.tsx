@@ -279,48 +279,48 @@ const Discover = () => {
 
       <div className={styles.soundSections}>
         {searchValue ? (
-          <div className={styles.soundCategory}>
-            <h2 className={styles.categoryTitle}>Search results</h2>
-            <div className={styles.soundList}>
-              {searchResults.length > 0 ? (
-                searchResults.map((sound) => (
-                  <div key={sound._id} className={styles.soundCard}>
-                    <PlayButton
-                        isPlaying={nowPlaying === sound._id}
-                        progress={nowPlaying === sound._id ? progress : 0}
-                        onClick={() => togglePlay(sound)}
-                    />
-                    <span className={styles.soundName}>{sound.soundName}</span>
-                    {(() => {
-                      const canAdd = gridSounds.some((s) => s === null);
-                      return (
-                          <button
-                              className={`${styles.addButton} ${
-                                  canAdd ? '' : styles.full
-                              }`}
-                              onClick={() =>
-                                  canAdd
-                                      ? handleAddSound(sound)
-                                      : setMessage('Your sound grid is full')
-                              }
-                              aria-label="Add sound"
-                              type="button"
-                          >
-                            {canAdd ? (
-                                <PlusIcon size={22} weight="regular" />
-                            ) : (
-                                <ProhibitIcon size={22} weight="regular" />
-                            )}
-                          </button>
-                      );
-                    })()}
-                  </div>
-                ))
-              ) : (
-                <p className={styles.noResults}>No results found.</p>
-              )}
+            <div className={styles.soundCategory}>
+              <h2 className={styles.categoryTitle}>Search results</h2>
+              <div className={styles.searchGrid}>
+                {searchResults.length > 0 ? (
+                    searchResults.map((sound) => (
+                        <div key={sound._id} className={styles.soundCard}>
+                          <PlayButton
+                              isPlaying={nowPlaying === sound._id}
+                              progress={nowPlaying === sound._id ? progress : 0}
+                              onClick={() => togglePlay(sound)}
+                          />
+                          <span className={styles.soundName}>{sound.soundName}</span>
+                          {(() => {
+                            const canAdd = gridSounds.some((s) => s === null);
+                            return (
+                                <button
+                                    className={`${styles.addButton} ${
+                                        canAdd ? '' : styles.full
+                                    }`}
+                                    onClick={() =>
+                                        canAdd
+                                            ? handleAddSound(sound)
+                                            : setMessage('Your sound grid is full')
+                                    }
+                                    aria-label="Add sound"
+                                    type="button"
+                                >
+                                  {canAdd ? (
+                                      <PlusIcon size={22} weight="regular" />
+                                  ) : (
+                                      <ProhibitIcon size={22} weight="regular" />
+                                  )}
+                                </button>
+                            );
+                          })()}
+                        </div>
+                    ))
+                ) : (
+                    <p className={styles.noResults}>No results found.</p>
+                )}
+              </div>
             </div>
-          </div>
         ) : (
             Object.entries(soundCategories).map(([title, sounds]) => (
                 <div key={title} className={styles.soundCategory}>

@@ -316,6 +316,46 @@ searchInput::placeholder {
   z-index: 1;
 }
 
+.searchGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(var(--card-w),1fr));
+  gap:calc(var(--inner-gap) * 1.5);       /* 24 px */
+  padding:8px;
+  max-height:60vh;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+.searchGrid .soundCard{
+  margin-inline:15px;
+  width:calc(100% - 30px);
+  margin-block:0;
+  overflow:hidden;
+}
+
+.searchGrid{
+  margin-left: -15px;                       /* counter-acts card margin */
+}
+
+.searchGrid{
+  padding-right: calc(8px + 15px);          /* original 8 px + glow */
+  overflow-x: hidden;                       /* no sideways scroll bar */
+}
+
+.noResults {
+  display: flex;
+  align-items: center;      /* vertical center, can remove if not needed */
+  justify-content: center;  /* horizontal center */
+  width: 100%;
+  min-height: 120px;        /* or any reasonable min height */
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 500;
+  text-align: center;       /* centers text on multiple lines too */
+  margin: 2rem 0;
+  background: transparent;  /* keep background clean */
+}
+
 /* Base desktop */
 @media (min-width: 1025px) {
   .bannerSection {
