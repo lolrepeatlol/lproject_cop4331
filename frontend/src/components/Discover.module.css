@@ -356,6 +356,37 @@ searchInput::placeholder {
   background: transparent;  /* keep background clean */
 }
 
+
+/* Recommended sounds styling */
+.recommendedCard {
+  box-shadow: 0 3px 20px 3px rgba(50, 100, 185, 0.38) !important; /* #3264B9 with opacity */
+}
+
+.recommendedCard:hover {
+  box-shadow: 0 0 15px 1px rgba(50, 100, 185, 0.8) !important; /* #3264B9 with higher opacity */
+}
+
+.recommendedPlayButton.playing {
+  background: #5D80BD !important; /* playingCircleColor */
+}
+
+.recommendedAddButton {
+  background: #3264B9 !important; /* addButtonColor */
+}
+
+.recommendedAddButton:hover {
+  background-color: #264a93 !important; /* Darker shade of #3264B9 */
+  box-shadow: 0 0 8px rgba(50, 100, 185, 0.2) !important; /* #3264B9 shadow */
+}
+
+.recommendedAddButton.full {
+  background: #8da4d4 !important; /* Muted version of #3264B9 */
+}
+
+.recommendedAddButton.full:hover {
+  background-color: rgba(50, 100, 185, 0.6) !important; /* #3264B9 with opacity */
+}
+
 /* Base desktop */
 @media (min-width: 1025px) {
   .bannerSection {
