@@ -31,10 +31,12 @@ const PlayButton = ({
                       isPlaying = false,
                       progress = 0,
                       onClick,
+                      isRecommended = false,
                     }: {
   isPlaying?: boolean;
   progress?: number;
   onClick: () => void;
+  isRecommended?: boolean;
 }) => {
   const SIZE     = 50;
   const STROKE   = 4;
@@ -44,7 +46,7 @@ const PlayButton = ({
 
   return (
       <button
-          className={`${styles.playButton} ${isPlaying ? styles.playing : ''}`}
+          className={`${styles.playButton} ${isPlaying ? styles.playing : ''} ${isRecommended ? styles.recommendedPlayButton : ''}`}
           onClick={onClick}
           aria-label={isPlaying ? 'Stop' : 'Play'}
           type="button"
@@ -320,51 +322,51 @@ const Discover = () => {
             </div>
           </div>
         ) : (
-          Object.entries(soundCategories).map(([title, sounds]) => (
-            <div key={title} className={styles.soundCategory}>
-              <h2 className={styles.categoryTitle}>{title}</h2>
-              <div className={styles.soundList}>
-                {sounds.length > 0 ? (
-                  sounds.map((sound) => (
-                    <div key={sound._id} className={styles.soundCard}>
-                      <PlayButton
-                          isPlaying={nowPlaying === sound._id}
-                          progress={nowPlaying === sound._id ? progress : 0}
-                          onClick={() => togglePlay(sound)}
-                      />
-                      <span className={styles.soundName}>{sound.soundName}</span>
-                      {(() => {
-                        const canAdd = gridSounds.some((s) => s === null);
-                        return (
-                            <button
-                                className={`${styles.addButton} ${
-                                    canAdd ? '' : styles.full
-                                }`}
-                                onClick={() =>
-                                    canAdd
-                                        ? handleAddSound(sound)
-                                        : setMessage('Your sound grid is full')
-                                }
-                                aria-label="Add sound"
-                                type="button"
-                            >
-                              {canAdd ? (
-                                  <PlusIcon size={22} weight="regular" />
-                              ) : (
-                                  <ProhibitIcon size={22} weight="regular" />
-                              )}
-                            </button>
-                        );
-                      })()}
-
-                    </div>
-                  ))
-                ) : (
-                  <p className={styles.noResults}>Loading sounds...</p>
-                )}
-              </div>
-            </div>
-          ))
+            Object.entries(soundCategories).map(([title, sounds]) => (
+                <div key={title} className={styles.soundCategory}>
+                  <h2 className={styles.categoryTitle}>{title}</h2>
+                  <div className={styles.soundList}>
+                    {sounds.length > 0 ? (
+                        sounds.map((sound) => (
+                            <div key={sound._id} className={`${styles.soundCard} ${title === 'Recommended sounds' ? styles.recommendedCard : ''}`}>
+                              <PlayButton
+                                  isPlaying={nowPlaying === sound._id}
+                                  progress={nowPlaying === sound._id ? progress : 0}
+                                  onClick={() => togglePlay(sound)}
+                                  isRecommended={title === 'Recommended sounds'}
+                              />
+                              <span className={styles.soundName}>{sound.soundName}</span>
+                              {(() => {
+                                const canAdd = gridSounds.some((s) => s === null);
+                                return (
+                                    <button
+                                        className={`${styles.addButton} ${
+                                            canAdd ? '' : styles.full
+                                        } ${title === 'Recommended sounds' ? styles.recommendedAddButton : ''}`}
+                                        onClick={() =>
+                                            canAdd
+                                                ? handleAddSound(sound)
+                                                : setMessage('Your sound grid is full')
+                                        }
+                                        aria-label="Add sound"
+                                        type="button"
+                                    >
+                                      {canAdd ? (
+                                          <PlusIcon size={22} weight="regular" />
+                                      ) : (
+                                          <ProhibitIcon size={22} weight="regular" />
+                                      )}
+                                    </button>
+                                );
+                              })()}
+                            </div>
+                        ))
+                    ) : (
+                        <p className={styles.noResults}>Loading sounds...</p>
+                    )}
+                  </div>
+                </div>
+            ))
         )}
       </div>
     </div>
