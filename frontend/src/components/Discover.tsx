@@ -158,14 +158,15 @@ const Discover = () => {
         setSearchResults([]);
       } else {
         const allSounds: Sound[] = res.results || [];
+        const defaultSounds = allSounds.filter(s => s.isDefault !== false);
         setSearchResults(allSounds);
 
         if (query === '') {
           const newCategories: Record<string, Sound[]> = {};
-          const shuffled = shuffleArray(allSounds);
+          const shuffled = shuffleArray(defaultSounds);
           newCategories['Recommended sounds'] = shuffled.slice(0, 6);
           hardcodedCategories.forEach(category => {
-            newCategories[category.title] = allSounds.filter(sound =>
+            newCategories[category.title] = defaultSounds.filter(sound =>
               category.soundNames.includes(sound.soundName)
             );
           });
