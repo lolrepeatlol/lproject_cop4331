@@ -22,7 +22,7 @@ const NavigationBar: React.FC = () => {
                 <WaveformIcon size={24} />
                 <span>Library</span>
             </a>
-            <a href="https://github.com/lolrepeatlol/lproject_cop4331" className={styles.navItem} target="_blank" rel="noopener noreferrer" onClick={closeMenu}>
+            <a href="/about" className={`${styles.navItem} ${currentPath === '/about' ? styles.active : ''}`} onClick={closeMenu}>
                 <InfoIcon size={24} />
                 <span>About</span>
             </a>
