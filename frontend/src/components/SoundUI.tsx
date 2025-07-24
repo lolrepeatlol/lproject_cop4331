@@ -116,7 +116,7 @@ function SoundUI() {
 
     /* start new audio */
     const baseUrl = window.location.origin.includes('localhost')
-        ? 'http://localhost:5050'
+        ? 'http://localhost:5000'
         : 'http://ucfgroup4.xyz';
     const a = new Audio(`${baseUrl}${sound.path}`);
 
