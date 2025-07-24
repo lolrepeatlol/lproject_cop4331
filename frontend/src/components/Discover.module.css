@@ -1,38 +1,95 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700&display=swap');
 
+body:has(.discoverContainer) {
+  background: none !important;
+  background-color: rgb(12, 12, 14) !important; /* Match your sound sections background */
+}
+
+:root {
+  --card-w: 280px;
+  --card-h: 75px;
+  --inner-gap: 16px;
+  --play-d: 50px;
+  --play-icon: 24px;
+
+  --title-font: 22px;
+  --add-d: 38px;
+  --add-icon: 18px;
+  --card-pad-start: 16px;
+  --card-pad-end:   16px;
+  --card-radius: 20px;
+}
+
+@media (max-width: 1199px) {
+  :root {
+    --card-w: 220px;
+    --card-h: 60px;
+    --inner-gap: 12px;
+    --play-d: 42px;
+    --play-icon: 20px;
+    --title-font: 16px;
+    --add-d: 32px;
+    --add-icon: 16px;
+    --card-pad-start: 12px;
+    --card-pad-end:   12px;
+    --card-radius: 16px;
+  }
+}
+
 .discoverContainer {
+  overflow: visible !important;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  padding-top: 5rem;
+  height: auto;
+  min-height: 100vh;
+  padding-top: 0; /* Remove padding-top */
   box-sizing: border-box;
+  background-color: rgb(12, 12, 14);
+}
+
+.bannerSection {
+  background-image: url('../assets/background.jpg');
+  background-size: cover;
+  background-position: center 40%;
+  background-repeat: no-repeat;
+  min-height: calc(40vh + 70px); /* Add nav bar height to extend behind it */
+  margin-top: -70px; /* Pull it up behind the nav bar */
+  padding-top: 70px; /* Add padding to account for nav bar */
 }
 
 .heroContent {
   text-align: center;
   width: 100%;
-  padding: 1.5rem 1rem;
-  flex-shrink: 0;
-  margin-bottom: 3rem;
+  padding: 4rem 1rem 0.5rem 1rem;
+  margin-top: 70px; /* Push content down past the nav bar */
 }
 
+.heroContent {
+  text-align: center;
+  width: 100%;
+  padding: 4rem 1rem 0.5rem 1rem;
+}
+
+
+
 .soundSections {
+  overflow: visible !important;  /* Allow natural page scrolling */
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  padding: 1.5rem;
+  padding: calc(var(--inner-gap) * 2) 1.5rem;
   background-color: rgb(12, 12, 14);
-  border-radius: 20px 20px 0 0;
-  overflow-y: auto;
-  flex-grow: 1;
+  border-radius: var(--card-radius);
+  /* Remove flex-grow: 1 to allow natural height */
   justify-content: flex-start;
 }
 
 .heroTitle {
   color: white;
-  font-size: 2.2rem;
+  font-size: 3rem;
   font-weight: bold;
-  margin-bottom: 1rem;
+  margin-bottom: 3.3rem;
+  text-shadow: 4px 4px 4px #00000033;
 }
 
 .searchBar {
@@ -41,14 +98,37 @@
   gap: 0.5rem;
 }
 
+.searchInputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: rgba(5, 5, 5, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 25px;
+}
+
 .searchInput {
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1rem 0.75rem 3rem;
   font-size: 1rem;
   border-radius: 25px;
-  background-color: #050505;
+  background-color: transparent;
   border: none;
-  width: 250px;
+  width: 400px;
   color: white;
+  outline: none;
+}
+
+searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .searchButton {
@@ -64,88 +144,132 @@
 .categoryTitle {
   color: #ffffff;
   font-size: 1.2rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.35rem;
   font-weight: 600;
 }
 
 .soundList {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 1rem;
-}
-
-.soundCard {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background-color: #2a2a31;
-  padding: 0.4rem 0.9rem;
-  border-radius: 1rem;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.soundCard:hover {
-  box-shadow: 0 0 15px rgba(201, 43, 130, 0.8);
-}
-
-.playButton {
-  background-color: transparent;
-  border: none;
-  color: #b13478;
-  width: 60px;
-  height: 60px;
-  font-size: 20px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-}
-
-.playButton:hover {
-  background-color: rgba(177, 52, 120, 0.2);
-  color: #c93b88;
-  transform: scale(1.1);
-}
-
-.playButton svg {
-  width: 1.4rem;
-  height: 1.4rem;
-  color: #b13478;
+  gap: var(--inner-gap);
+  overflow-x: auto;
+  overflow-y: hidden;                        /* still no vertical scroll inside */
+  /* ←— gutter on both sides —→ */
+  padding-inline: calc(var(--inner-gap) + 22px);
+  margin-inline:  calc(-1 * (var(--inner-gap) + 22px));
+  /* small top/bottom padding so cards don’t touch the container edge */
+  padding-block: 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 
 .soundName {
+  flex: 1;
+  margin: 0 0px;
+  font-size: var(--title-font);
+  font-weight: 450;
   color: #ffffff;
-  font-size: 0.9rem;
-  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.addButton {
+.soundCard {
+  flex: 0 0 var(--card-w);  /* This sets the width consistently */
+  height: var(--card-h);
+  width: var(--card-w);
   display: flex;
-  justify-content: center;
   align-items: center;
-  background-color: #b13478;
-  color: white;
-  font-size: 1.3rem;
-  border: none;
-  border-radius: 10%;
-  width: 2rem;
-  height: 2rem;
+  gap: var(--inner-gap);
+  padding-left:  var(--card-pad-start);
+  padding-right: var(--card-pad-end);
+  background: #27272d;
+  border-radius: 15px;
+  box-shadow: 0 3px 20px 3px rgba(148, 56, 114, 0.38);
+  transition: transform .25s, box-shadow .25s;
+  margin-block: calc(var(--inner-gap) / 2);
+}
+
+.soundCard > .addButton { margin-left: auto; }
+
+.soundCard:hover {
+  box-shadow: 0 0 15px 1px rgba(201, 43, 130, 0.8);
+}
+
+.playButton {
+  padding: 0 !important;
+  box-sizing: border-box;
+  width: var(--play-d);
+  height: var(--play-d);
+  border-radius: 50%;
+  background: #3E3E47;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;            /* never squish */
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 0 10px rgba(177, 52, 120, 0.3);
-  margin-top: auto;
-  margin-bottom: auto;
-  line-height: 1;
-  padding: 0;
+  transition: background-color 0.2s ease, background-image 0.2s linear;
+  margin-block: calc(var(--card-pad-start) / 2);
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.playButton:hover {
+  background-color: #2e2e36; /* darker than #3E3E47—tweak to taste */
+}
+
+.playButton.playing { background: #AD73A4; }
+
+.playButton svg {
+  width: var(--play-icon);
+  height: var(--play-icon);
+  color: #FFF;
+}
+
+/* ----------------------------------------------------------------
+   ADD BUTTON
+---------------------------------------------------------------- */
+.addButton {
+  width: var(--add-d);
+  height: var(--add-d);;
+  padding: 0 !important;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: #943872;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  margin-block: calc(var(--card-pad-start) / 2);
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 .addButton:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 16px rgba(177, 52, 120, 0.5);
+  transform: none !important;
+  box-shadow: 0 0 8px rgba(148,56,114,0.2) !important;
+  background-color: #7a2e5d !important;
+}
+
+/* when grid is full */
+.addButton.full {
+  background: #9D8494;
+}
+
+.addButton.full:hover {
+  background-color: #7a2e5d88 !important;
+}
+
+.addButton svg {
+  width: var(--add-icon);
+  height: var(--add-icon);
+  color: #FFF;
 }
 
 .messageContainer {
@@ -159,4 +283,111 @@
   color: white;
   font-size: 1.3rem;
   margin: 0;
+}
+
+/* ensure the button is the reference frame */
+.playButton {
+  position: relative;
+  overflow: visible;           /* allow the 60 px SVG to extend outside */
+}
+
+/* SVG ring: centred, dynamically sized */
+.ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* Remove fixed width/height - now set inline */
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* icon stays on top */
+.playButton > svg + * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Base desktop */
+@media (min-width: 1025px) {
+  .bannerSection {
+    min-height: calc(35vh + 70px);
+  }
+  .heroContent {
+    padding: 4rem 1rem 3.5rem 1rem !important;
+  }
+  .heroTitle {
+    font-size: 3rem;
+    margin-bottom: 3.3rem;
+  }
+  .searchInput {
+    width: 400px;
+  }
+}
+
+/* iPad landscape / medium tablets */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .bannerSection {
+    min-height: calc(35vh + 70px);
+  }
+  .heroContent {
+    padding: 3rem 1rem 2rem 1rem;
+  }
+  .heroTitle {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+  }
+}
+
+
+/* Small tablets / large phones */
+@media (max-width: 768px) and (min-width: 481px) {
+  .bannerSection {
+    min-height: calc(25vh + 70px);
+  }
+  .heroContent {
+    padding: 2rem 1rem 1rem 1rem;
+  }
+  .heroTitle {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  .searchInput {
+    width: 280px;
+  }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+  .bannerSection {
+    min-height: calc(22vh + 70px);
+    max-height: 300px;
+  }
+  .heroContent {
+    padding: 1.8rem 0.5rem 0.8rem 0.5rem;
+  }
+  .heroTitle {
+    font-size: 1.8rem;
+    margin-bottom: 1.2rem;
+  }
+  .searchInput {
+    width: 240px;
+  }
+}
+
+/* Kindle Fire HDX and similar narrow tall tablets */
+@media (min-height: 1200px) {
+  .bannerSection {
+    min-height: calc(20vh + 70px);
+  }
+  .heroContent {
+    padding: 2.5rem 1rem 0.3rem 1rem !important; /* Much less bottom padding */
+  }
+  .heroTitle {
+    font-size: 2.3rem;
+    margin-bottom: 1.8rem;
+  }
+  .searchInput {
+    width: 320px;
+  }
 }

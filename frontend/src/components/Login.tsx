@@ -214,15 +214,15 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
           </div>
           <span className={styles.loginResult}>{message}</span>
           <button type="submit" className={styles.primaryButton}>
-            Log In
+            Log in
           </button>
         </form>
         <div className={styles.extraActions}>
           <button onClick={handleOpenModal} className={styles.linkButton}>
-            Forgot Password?
+            Forgot password?
           </button>
           <button onClick={handleRegister} className={styles.linkButton}>
-            Don't have an account? Sign Up
+            Don't have an account? Sign up
           </button>
         </div>
       </div>
@@ -238,7 +238,7 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
 
             {modalStep === 'enterEmail' ? (
               <>
-                <h2>Reset Password</h2>
+                <h2>Reset password</h2>
                 <label htmlFor="resetEmail" style={{ display: 'block', marginBottom: '1rem' }}>
                   Enter your email to receive a reset code.
                 </label>
@@ -252,16 +252,16 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
                     onChange={(e) => setResetEmail(e.target.value)}
                   />
                   <div className={styles.modalActions}>
-                    <button type="submit" className={styles.primaryButton}>Send Code</button>
+                    <button type="submit" className={styles.primaryButton}>Send code</button>
                   </div>
                 </form>
               </>
             ) : (
               <>
-                <h2>Enter Verification Code</h2>
+                <h2>Enter verification code</h2>
                 <p>Check your email for the code sent to {resetEmail}.</p>
                 <form onSubmit={handleVerifyAndReset}>
-                  <label htmlFor="verificationCode" style={{ display: 'none' }}>Verification Code</label>
+                  <label htmlFor="verificationCode" style={{ display: 'none' }}>Verification code</label>
                   <input
                     id="verificationCode"
                     name="verificationCode"
@@ -270,7 +270,7 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
                     value={verificationCode}
                     onChange={(e) => setVerificationCode(e.target.value)}
                   />
-                  <label htmlFor="newPassword" style={{ display: 'none' }}>New Password</label>
+                  <label htmlFor="newPassword" style={{ display: 'none' }}>New password</label>
                   <input
                     id="newPassword"
                     name="newPassword"
@@ -280,7 +280,7 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
                     onChange={(e) => setNewPassword(e.target.value)}
                   />
                   <div className={styles.modalActions}>
-                    <button type="submit" className={styles.primaryButton}>Reset Password</button>
+                    <button type="submit" className={styles.primaryButton}>Reset password</button>
                   </div>
                 </form>
               </>
