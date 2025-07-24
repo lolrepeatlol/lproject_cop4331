@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styles from './SoundUI.module.css';
 import { buildPath } from '../Path';
 import { retrieveToken, storeToken } from '../tokenStorage';
+import { PlayIcon, StopIcon, PlusIcon, UploadSimpleIcon, XCircleIcon } from '@phosphor-icons/react';
 
 // Define the structure of a sound object
 interface Sound {
@@ -20,6 +21,10 @@ function SoundUI() {
   const [searchResults, setSearchResults] = useState<Sound[]>([]);
   const [gridSounds, setGridSounds] = useState<(Sound | null)[]>(Array(8).fill(null));
   const [isGridLoaded, setIsGridLoaded] = useState(false);
+  const [audio,      setAudio]      = useState<HTMLAudioElement | null>(null);
+  const [nowPlaying, setNowPlaying] = useState<string | null>(null);
+  const [progress,   setProgress]   = useState<number>(0);
+
   useEffect(() => {
     document.body.style.backgroundImage = 'none';
     document.body.style.backgroundColor = '#1C1C1EB3';
@@ -32,7 +37,7 @@ function SoundUI() {
   const [uploadMessage, setUploadMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const getUserID = (): string | null => {
+  const getUserID = useCallback((): string | null => {
     const userData = localStorage.getItem('user_data');
     if (!userData) {
       setMessage('User data not found. Please log in again.');
@@ -40,7 +45,95 @@ function SoundUI() {
     }
     const user = JSON.parse(userData);
     return user.id;
+  }, []);
+
+  const PlayButton = ({
+                        isPlaying = false,
+                        progress   = 0,
+                        onClick,
+                      }: {
+    isPlaying?: boolean;
+    progress?: number;
+    onClick: React.MouseEventHandler<HTMLButtonElement>;
+  }) => {
+    /* same geometry you use in Discover -------------------------------- */
+    const SIZE   = 50;
+    const STROKE = 4;
+    const R      = (SIZE - STROKE) / 2;
+    const CIRC   = 2 * Math.PI * R;
+    const offset = CIRC * (1 - progress);
+
+    return (
+        <button
+            className={`${styles.playButton} ${isPlaying ? styles.playing : ''}`}
+            onClick={onClick}
+            aria-label={isPlaying ? 'Stop' : 'Play'}
+            type="button"
+        >
+          {isPlaying && (
+              <svg
+                  className={styles.ring}
+                  viewBox={`0 0 ${SIZE} ${SIZE}`}
+                  style={{ width: SIZE, height: SIZE }}
+              >
+                <circle
+                    cx={SIZE / 2}
+                    cy={SIZE / 2}
+                    r={R}
+                    fill="none"
+                    stroke="#FFF"
+                    strokeWidth={STROKE}
+                    strokeDasharray={CIRC}
+                    strokeDashoffset={offset}
+                    transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
+                />
+              </svg>
+          )}
+
+          {/* phosphor icons already in your project */}
+          {isPlaying
+              ? <StopIcon  size={20} weight="regular"  />
+              : <PlayIcon  size={20} weight="regular"  />}
+        </button>
+    );
   };
+
+  /* identical togglePlay to Discover --------------------------------- */
+  const togglePlay = useCallback((sound: Sound) => {
+    /* stop any current sound */
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+
+    /* clicking the same card = stop */
+    if (nowPlaying === sound._id) {
+      setNowPlaying(null);
+      setProgress(0);
+      setAudio(null);
+      return;
+    }
+
+    /* start new audio */
+    const baseUrl = window.location.origin.includes('localhost')
+        ? 'http://localhost:5050'
+        : 'http://ucfgroup4.xyz';
+    const a = new Audio(`${baseUrl}${sound.path}`);
+
+    a.addEventListener('timeupdate', () =>
+        setProgress(a.duration ? a.currentTime / a.duration : 0)
+    );
+    a.addEventListener('ended', () => {
+      setNowPlaying(null);
+      setProgress(0);
+      setAudio(null);
+    });
+
+    a.play().catch(console.error);
+
+    setNowPlaying(sound._id);
+    setAudio(a);
+  }, [audio, nowPlaying]);
 
   const handleUpload = async (fileToUpload: File) => {
     const UserID = getUserID();
@@ -76,8 +169,9 @@ function SoundUI() {
           storeToken(res.jwtToken);
         }
       }
-    } catch (error: any) {
-      setUploadMessage(`An error occurred: ${error.toString()}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setUploadMessage(`An error occurred: ${msg}`);
     }
   };
 
@@ -96,7 +190,7 @@ function SoundUI() {
   };
 
   // --- Function to get the grid layout from the API ---
-  const fetchGridLayout = async () => {
+  const fetchGridLayout = useCallback(async () => {
     const UserID = getUserID();
     if (!UserID) return;
 
@@ -121,13 +215,14 @@ function SoundUI() {
           storeToken(res.jwtToken);
         }
       }
-    } catch (error: any) {
-      setMessage(error.toString());
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setUploadMessage(`An error occurred: ${msg}`);
     }
-  };
+  }, [getUserID]);
 
   // --- Function to save the grid layout ---
-  const saveGridLayout = async (currentGridSounds: (Sound | null)[]) => {
+  const saveGridLayout = useCallback(async (currentGridSounds: (Sound | null)[]) => {
     const UserID = getUserID();
     if (!UserID) return;
 
@@ -153,13 +248,14 @@ function SoundUI() {
           storeToken(res.jwtToken);
         }
       }
-    } catch (error: any) {
-      setMessage(error.toString());
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setUploadMessage(`An error occurred: ${msg}`);
     }
-  };
+  }, [getUserID]);
 
   // --- Function to search for sounds ---
-  const searchSounds = async () => {
+  const searchSounds = useCallback(async () => {
     const UserID = getUserID();
     if (!UserID) return;
 
@@ -185,11 +281,12 @@ function SoundUI() {
           storeToken(res.jwtToken);
         }
       }
-    } catch (error: any) {
-      setMessage(error.toString());
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setUploadMessage(`An error occurred: ${msg}`);
     }
-  };
-  -
+  }, [getUserID, searchValue]);
+
     useEffect(() => {
       const loadAndSave = async () => {
         if (!isGridLoaded) {
@@ -200,20 +297,20 @@ function SoundUI() {
         }
       };
 
-      loadAndSave();
-    }, [gridSounds, isGridLoaded]);
+      void loadAndSave();
+    }, [gridSounds, isGridLoaded, fetchGridLayout, saveGridLayout]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (searchValue) {
-        searchSounds();
+        void searchSounds();
       } else {
         setSearchResults([]);
       }
     }, 150);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchValue]);
+  }, [searchValue, searchSounds]);
 
   // --- Modal and Grid interaction functions ---
   const openModal = (item: number) => {
@@ -233,39 +330,38 @@ function SoundUI() {
       const newGridSounds = [...gridSounds];
       newGridSounds[selectedGridItem - 1] = sound;
       setGridSounds(newGridSounds);
+
+      /* halt audio if we just removed the playing one */
+      if (sound?._id) stopIfCleared(sound._id);
+
       closeModal();
     }
   };
 
-  const handleClearSound = (e: React.MouseEvent, index: number) => {
+  const handleClearSound = (e: React.MouseEvent<HTMLButtonElement>, index: number) => {
     e.stopPropagation();
     const newGridSounds = [...gridSounds];
     newGridSounds[index] = null;
     setGridSounds(newGridSounds);
   };
 
-  const handlePlaySound = (sound: Sound | null) => {
-    if (sound && sound.path) {
-      const baseUrl = window.location.origin;
-      let soundLink = `http://localhost:5050${sound.path}`;
-      if (!(baseUrl.includes("localhost"))) {
-        soundLink = `http://ucfgroup4.xyz${sound.path}`;
-      }
-      console.log('Playing sound from:', soundLink);
-      const audio = new Audio(soundLink);
-      audio.play().catch(e => console.error("Error playing sound:", e));
+  /* if a playing sound is cleared from the grid, stop it */
+  const stopIfCleared = useCallback((id: string) => {
+    if (nowPlaying === id && audio) {
+      audio.pause();
+      setAudio(null);
+      setNowPlaying(null);
+      setProgress(0);
     }
-  };
+  }, [audio, nowPlaying]);
+
+
   return (
     <div className={styles.soundUiDiv}>
       <div className={styles.headerContainer}>
         <h1>Your sounds</h1>
         <button className={styles.UploadButton} onClick={handleUploadButtonClick}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M4.66699 6L8.00033 2.66667L11.3337 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M8 2.66667V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <UploadSimpleIcon size={20} weight="regular" />
           <span>Upload new...</span>
         </button>
         <input
@@ -286,36 +382,24 @@ function SoundUI() {
           >
             {sound ? (
               <div className={styles.soundItemContent}>
-                <button
-                  className={styles.playButton}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePlaySound(sound);
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M5 3l14 9-14 9V3z"></path>
-                  </svg>
-                </button>
+                <PlayButton
+                    isPlaying={nowPlaying === sound._id}
+                    progress={nowPlaying === sound._id ? progress : 0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePlay(sound);
+                    }}
+                />
                 <span className={styles.soundName}>{sound.soundName}</span>
                 <button
                   className={styles.clearButton}
                   onClick={(e) => handleClearSound(e, index)}
                 >
-                  &times;
+                  <XCircleIcon size={20} weight="regular" />
                 </button>
-
               </div>
             ) : (
-              "+"
+              <PlusIcon size={32} weight="regular" className={styles.emptyIcon}/>
             )}
           </div>
         ))}
