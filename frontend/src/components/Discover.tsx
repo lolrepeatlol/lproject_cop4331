@@ -100,7 +100,7 @@ const Discover = () => {
   };
 
   const searchSounds = async (query: string) => {
-    const UserID = getUserID();
+    const UserID = -1;
     if (!UserID) {
       setMessage('Please log in to search for sounds.');
       return;
